@@ -12,8 +12,15 @@ After you checkout the repo, install node. Then:
 
 ```
 $> npm install
-$> elm-package install
+$> npm run install-elm
 $> npm run watch-elm
+```
+
+This will make Elm available in your project. You can also install Elm globally to make it easier to use from the
+command line:
+
+```
+$> npm install elm -g
 ```
 
 To run the app, open a new console:

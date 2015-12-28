@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "watch-elm": "watch 'elm-make src/*.elm --output=app/js/elm.js' ./src --wait=1 --ignoreDotFiles"
+    "watch-elm": "watch './node_modules/elm/binwrappers/elm-make src/*.elm --output=app/js/elm.js' ./src --wait=1 --ignoreDotFiles",
+    "install-elm": "./node_modules/elm/binwrappers/elm-package install"
   },
   "author": "TroopTrack, LLC",
   "license": "MIT",
