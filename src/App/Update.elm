@@ -33,7 +33,7 @@ update action model =
           if List.isEmpty users then
             model.page
           else
-            TroopSelectionPage
+            PhotoAlbumPage
 
       in
         ( { model | loginInfo = login, page = page }

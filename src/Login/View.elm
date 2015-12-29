@@ -2,8 +2,8 @@ module Login.View where
 
 import Signal exposing (Address)
 
-import Html exposing (Html, Attribute, form, div, h4, input, text, p, a, label, button)
-import Html.Attributes exposing (type', placeholder, href, class, value, disabled)
+import Html as H exposing (Html, Attribute)
+import Html.Attributes as A
 import Html.Events exposing (on, targetValue, onClick)
 
 import Layouts
@@ -17,21 +17,19 @@ view address model =
 
 viewContent : Address Action -> Model -> Html
 viewContent address model =
-  div [ class "row column log-in-form" ]
-    [ h4 [ class "text-center" ] [ text "Log in with your user name" ]
+  H.div [ A.class "row column log-in-form" ]
+    [ H.h4 [ A.class "text-center" ] [ H.text "Log in with your user name" ]
     , errorMessage model
     , successMessage model
-    , field "User name"
-        [ type' "text"
-        , placeholder "Your user name"
+    , field "Username"
+        [ A.type' "text"
         , on "input" targetValue (toMessage address Username)
-        , value model.username
+        , A.value model.username
         ]
     , field "Password"
-        [ type' "password"
-        , placeholder "Password"
+        [ A.type' "password"
         , on "input" targetValue (toMessage address Password)
-        , value model.password
+        , A.value model.password
         ]
     , submitButton address model
     , forgotPassword
@@ -41,26 +39,27 @@ errorMessage : Model -> Html
 errorMessage model =
   case model.errorMessage of
     Nothing ->
-      div [ class "text-center" ] []
+      H.div [ A.class "text-center" ] []
 
     Just msg ->
-      div [ class "text-center alert callout" ] [ text msg ]
+      H.div [ A.class "text-center alert callout" ] [ H.text msg ]
 
 successMessage : Model -> Html
 successMessage model =
   case model.successMessage of
     Nothing ->
-      div [ class "text-center" ] []
+      H.div [ A.class "text-center" ] []
 
     Just msg ->
-      div [ class "text-center success callout" ] [ text msg ]
+      H.div [ A.class "text-center success callout" ] [ H.text msg ]
 
 field : String -> List Attribute -> Html
 field name attributes =
-  label []
-    [ text name
-    , input attributes []
-    ]
+  let
+    enhancedAttributes =
+      [ A.placeholder name ] ++ attributes
+  in
+    H.input enhancedAttributes []
 
 submitButton : Address Action -> Model -> Html
 submitButton address model =
@@ -73,20 +72,21 @@ submitButton address model =
         False ->
           "Log in"
   in
-    p []
-      [ button
-          [ class "button expanded"
-          , disabled model.authenticating
+    H.p []
+      [ H.button
+          [ A.class "button expanded"
+          , A.disabled model.authenticating
           , onClick address Authenticate
           ]
-          [ text buttonText ]
+          [ H.text buttonText ]
       ]
 
 forgotPassword : Html
 forgotPassword =
-  p [ class "text-center" ]
-    [ a [ href "#" ]
-        [ text "Forgot your password?" ]
+  H.p [ A.class "text-center" ]
+    [ H.a
+      [ A.href "#" ]
+      [ H.text "Forgot your password?" ]
     ]
 
 toMessage : Address action -> (b -> action) -> b -> Signal.Message

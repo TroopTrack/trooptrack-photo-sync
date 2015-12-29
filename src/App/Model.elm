@@ -9,7 +9,7 @@ type alias Model =
 
 type Page
   = LoginPage
-  | TroopSelectionPage
+  | PhotoAlbumPage
 
 
 initialModel : Model

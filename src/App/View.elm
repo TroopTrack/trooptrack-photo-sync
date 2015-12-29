@@ -1,12 +1,13 @@
 module App.View where
 
 import Signal exposing (Address)
-import Html exposing (Html)
+import Html as H exposing (Html)
 
 import App.Model exposing (Model, Page(..))
 import App.Update exposing (Action(..))
 
 import Login.View as Login
+import PhotoAlbum.View as PhotoAlbum
 
 view : Address Action -> Model -> Html
 view address model =
@@ -17,5 +18,5 @@ view address model =
         (Signal.forwardTo address Authentication)
         model.loginInfo
 
-    TroopSelectionPage ->
-      Html.text "This will be a troop selection page"
+    PhotoAlbumPage ->
+      PhotoAlbum.view
