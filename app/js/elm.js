@@ -11108,11 +11108,13 @@ Elm.Login.Update.make = function (_elm) {
                  var oldCredentials = model.credentials;
                  var newCredentials = _U.update(oldCredentials,{users: _p1._0});
                  return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{credentials: newCredentials,errorMessage: $Maybe.Nothing,successMessage: $Maybe.Just("Authenticated!")})
+                        ,_0: _U.update(model,
+                        {credentials: newCredentials,password: "",errorMessage: $Maybe.Nothing,successMessage: $Maybe.Just("Authenticated!")})
                         ,_1: storeCurrentUser(newCredentials)};
               } else {
                  return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{errorMessage: $Maybe.Just("oops! couldn\'t authenticate"),successMessage: $Maybe.Nothing,authenticating: false})
+                        ,_0: _U.update(model,
+                        {errorMessage: $Maybe.Just("oops! couldn\'t authenticate"),successMessage: $Maybe.Nothing,password: "",authenticating: false})
                         ,_1: $Effects.none};
               }}
    });

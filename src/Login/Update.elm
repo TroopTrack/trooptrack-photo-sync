@@ -54,6 +54,7 @@ update action model =
           in
             ( { model |
                   credentials = newCredentials
+                , password = ""
                 , errorMessage = Nothing
                 , successMessage = Just "Authenticated!"
               }
@@ -65,6 +66,7 @@ update action model =
           ( { model |
                 errorMessage = Just "oops! couldn't authenticate"
               , successMessage = Nothing
+              , password = ""
               , authenticating = False
             }
           , Effects.none
