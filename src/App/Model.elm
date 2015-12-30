@@ -10,10 +10,11 @@ type alias Model =
 type Page
   = LoginPage
   | PhotoAlbumPage
+  | LoadingPage
 
 
 initialModel : Model
 initialModel =
-  { page = LoginPage
+  { page = LoadingPage
   , loginInfo = Login.initialModel
   }

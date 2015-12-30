@@ -16,8 +16,14 @@
   <script src="js/foundation.min.js"></script>
   <script src="js/app.js"></script>
   <script src="js/elm.js"></script>
+  <script src="js/storage.js"></script>
   <script type="application/javascript">
-    Elm.fullscreen(Elm.App);
+    var app = Elm.fullscreen(Elm.App, {
+      setCurrentUser: null
+    });
+
+    var storage = require('./js/storage.js');
+    storage.connectTo(app);
   </script>
 </body>
 

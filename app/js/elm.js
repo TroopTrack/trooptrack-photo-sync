@@ -11032,11 +11032,17 @@ Elm.App.Model.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var LoadingPage = {ctor: "LoadingPage"};
+   var initialModel = {page: LoadingPage,loginInfo: $Login$Model.initialModel};
    var PhotoAlbumPage = {ctor: "PhotoAlbumPage"};
    var LoginPage = {ctor: "LoginPage"};
-   var initialModel = {page: LoginPage,loginInfo: $Login$Model.initialModel};
    var Model = F2(function (a,b) {    return {page: a,loginInfo: b};});
-   return _elm.App.Model.values = {_op: _op,Model: Model,LoginPage: LoginPage,PhotoAlbumPage: PhotoAlbumPage,initialModel: initialModel};
+   return _elm.App.Model.values = {_op: _op
+                                  ,Model: Model
+                                  ,LoginPage: LoginPage
+                                  ,PhotoAlbumPage: PhotoAlbumPage
+                                  ,LoadingPage: LoadingPage
+                                  ,initialModel: initialModel};
 };
 Elm.Login = Elm.Login || {};
 Elm.Login.Update = Elm.Login.Update || {};
@@ -11058,6 +11064,7 @@ Elm.Login.Update.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var storeUsersBox = $Signal.mailbox($Login$Model.initialCredentials);
    var userDecoder = A9($Json$Decode.object8,
    $Login$Model.User,
    A2($Json$Decode._op[":="],"token",$Json$Decode.string),
@@ -11083,12 +11090,17 @@ Elm.Login.Update.make = function (_elm) {
       ,body: $Http.empty}));
    };
    var init = {ctor: "_Tuple2",_0: $Login$Model.initialModel,_1: $Effects.none};
+   var NoOp = {ctor: "NoOp"};
+   var storeCurrentUser = function (credentials) {
+      return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,storeUsersBox.address,credentials)));
+   };
    var UserToken = function (a) {    return {ctor: "UserToken",_0: a};};
    var authenticate = function (model) {    return $Effects.task(A2($Task.map,UserToken,$Task.toResult(sendAuthRequest(model))));};
    var update = F2(function (action,model) {
       var _p0 = action;
       switch (_p0.ctor)
-      {case "Username": return {ctor: "_Tuple2",_0: _U.update(model,{username: _p0._0}),_1: $Effects.none};
+      {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "Username": return {ctor: "_Tuple2",_0: _U.update(model,{username: _p0._0}),_1: $Effects.none};
          case "Password": return {ctor: "_Tuple2",_0: _U.update(model,{password: _p0._0}),_1: $Effects.none};
          case "Authenticate": return {ctor: "_Tuple2",_0: _U.update(model,{authenticating: true}),_1: authenticate(model)};
          default: var _p1 = _p0._0;
@@ -11097,7 +11109,7 @@ Elm.Login.Update.make = function (_elm) {
                  var newCredentials = _U.update(oldCredentials,{users: _p1._0});
                  return {ctor: "_Tuple2"
                         ,_0: _U.update(model,{credentials: newCredentials,errorMessage: $Maybe.Nothing,successMessage: $Maybe.Just("Authenticated!")})
-                        ,_1: $Effects.none};
+                        ,_1: storeCurrentUser(newCredentials)};
               } else {
                  return {ctor: "_Tuple2"
                         ,_0: _U.update(model,{errorMessage: $Maybe.Just("oops! couldn\'t authenticate"),successMessage: $Maybe.Nothing,authenticating: false})
@@ -11112,13 +11124,16 @@ Elm.Login.Update.make = function (_elm) {
                                      ,Password: Password
                                      ,Authenticate: Authenticate
                                      ,UserToken: UserToken
+                                     ,NoOp: NoOp
                                      ,init: init
                                      ,update: update
                                      ,authenticate: authenticate
                                      ,sendAuthRequest: sendAuthRequest
+                                     ,storeCurrentUser: storeCurrentUser
                                      ,authDecoder: authDecoder
                                      ,userListDecoder: userListDecoder
-                                     ,userDecoder: userDecoder};
+                                     ,userDecoder: userDecoder
+                                     ,storeUsersBox: storeUsersBox};
 };
 Elm.App = Elm.App || {};
 Elm.App.Update = Elm.App.Update || {};
@@ -11133,23 +11148,45 @@ Elm.App.Update.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $List = Elm.List.make(_elm),
+   $Login$Model = Elm.Login.Model.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var init = {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: $Effects.none};
+   var getCurrentUserBox = $Signal.mailbox({ctor: "_Tuple0"});
+   var CurrentUser = function (a) {    return {ctor: "CurrentUser",_0: a};};
+   var NoOp = {ctor: "NoOp"};
+   var getCurrentUser = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,getCurrentUserBox.address,{ctor: "_Tuple0"})));
+   var init = {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
    var Authentication = function (a) {    return {ctor: "Authentication",_0: a};};
    var update = F2(function (action,model) {
       var _p0 = action;
-      var _p1 = A2($Login$Update.update,_p0._0,model.loginInfo);
-      var login = _p1._0;
-      var fx = _p1._1;
-      var users = login.credentials.users;
-      var page = $List.isEmpty(users) ? model.page : $App$Model.PhotoAlbumPage;
-      return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: login,page: page}),_1: A2($Effects.map,Authentication,fx)};
+      switch (_p0.ctor)
+      {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "CurrentUser": var _p1 = _p0._0;
+           if (_p1.ctor === "Nothing") {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{page: $App$Model.LoginPage}),_1: $Effects.none};
+              } else {
+                 var loginInfo = model.loginInfo;
+                 var newLoginInfo = _U.update(loginInfo,{credentials: _p1._0});
+                 return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: newLoginInfo,page: $App$Model.PhotoAlbumPage}),_1: $Effects.none};
+              }
+         default: var _p2 = A2($Login$Update.update,_p0._0,model.loginInfo);
+           var login = _p2._0;
+           var fx = _p2._1;
+           var users = login.credentials.users;
+           var page = $List.isEmpty(users) ? model.page : $App$Model.PhotoAlbumPage;
+           return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: login,page: page}),_1: A2($Effects.map,Authentication,fx)};}
    });
-   return _elm.App.Update.values = {_op: _op,Authentication: Authentication,init: init,update: update};
+   return _elm.App.Update.values = {_op: _op
+                                   ,Authentication: Authentication
+                                   ,NoOp: NoOp
+                                   ,CurrentUser: CurrentUser
+                                   ,init: init
+                                   ,update: update
+                                   ,getCurrentUser: getCurrentUser
+                                   ,getCurrentUserBox: getCurrentUserBox};
 };
 Elm.Layouts = Elm.Layouts || {};
 Elm.Layouts.make = function (_elm) {
@@ -11319,6 +11356,25 @@ Elm.PhotoAlbum.View.make = function (_elm) {
                                         ,thumbnails: thumbnails
                                         ,thumbnail: thumbnail};
 };
+Elm.Loading = Elm.Loading || {};
+Elm.Loading.View = Elm.Loading.View || {};
+Elm.Loading.View.make = function (_elm) {
+   "use strict";
+   _elm.Loading = _elm.Loading || {};
+   _elm.Loading.View = _elm.Loading.View || {};
+   if (_elm.Loading.View.values) return _elm.Loading.View.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var view = $Html.text("Loading...");
+   return _elm.Loading.View.values = {_op: _op,view: view};
+};
 Elm.App = Elm.App || {};
 Elm.App.View = Elm.App.View || {};
 Elm.App.View.make = function (_elm) {
@@ -11333,6 +11389,7 @@ Elm.App.View.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $Html = Elm.Html.make(_elm),
    $List = Elm.List.make(_elm),
+   $Loading$View = Elm.Loading.View.make(_elm),
    $Login$View = Elm.Login.View.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $PhotoAlbum$View = Elm.PhotoAlbum.View.make(_elm),
@@ -11341,11 +11398,10 @@ Elm.App.View.make = function (_elm) {
    var _op = {};
    var view = F2(function (address,model) {
       var _p0 = model.page;
-      if (_p0.ctor === "LoginPage") {
-            return A2($Login$View.view,A2($Signal.forwardTo,address,$App$Update.Authentication),model.loginInfo);
-         } else {
-            return $PhotoAlbum$View.view;
-         }
+      switch (_p0.ctor)
+      {case "LoadingPage": return $Loading$View.view;
+         case "LoginPage": return A2($Login$View.view,A2($Signal.forwardTo,address,$App$Update.Authentication),model.loginInfo);
+         default: return $PhotoAlbum$View.view;}
    });
    return _elm.App.View.values = {_op: _op,view: view};
 };
@@ -11362,14 +11418,69 @@ Elm.App.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $List = Elm.List.make(_elm),
+   $Login$Model = Elm.Login.Model.make(_elm),
+   $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var app = $StartApp.start({init: $App$Update.init,update: $App$Update.update,view: $App$View.view,inputs: _U.list([])});
+   var setCurrentUser = Elm.Native.Port.make(_elm).inboundSignal("setCurrentUser",
+   "Maybe.Maybe\n    Login.Model.Credentials",
+   function (v) {
+      return v === null ? Elm.Maybe.make(_elm).Nothing : Elm.Maybe.make(_elm).Just(typeof v === "object" && "partnerToken" in v && "users" in v ? {_: {}
+                                                                                                                                                  ,partnerToken: typeof v.partnerToken === "string" || typeof v.partnerToken === "object" && v.partnerToken instanceof String ? v.partnerToken : _U.badPort("a string",
+                                                                                                                                                  v.partnerToken)
+                                                                                                                                                  ,users: typeof v.users === "object" && v.users instanceof Array ? Elm.Native.List.make(_elm).fromArray(v.users.map(function (v) {
+                                                                                                                                                     return typeof v === "object" && "token" in v && "privileges" in v && "troop" in v && "troop_id" in v && "troop_number" in v && "troop_type" in v && "troop_type_id" in v && "user_id" in v ? {_: {}
+                                                                                                                                                                                                                                                                                                                                                  ,token: typeof v.token === "string" || typeof v.token === "object" && v.token instanceof String ? v.token : _U.badPort("a string",
+                                                                                                                                                                                                                                                                                                                                                  v.token)
+                                                                                                                                                                                                                                                                                                                                                  ,privileges: typeof v.privileges === "object" && v.privileges instanceof Array ? Elm.Native.List.make(_elm).fromArray(v.privileges.map(function (v) {
+                                                                                                                                                                                                                                                                                                                                                     return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+                                                                                                                                                                                                                                                                                                                                                     v);
+                                                                                                                                                                                                                                                                                                                                                  })) : _U.badPort("an array",
+                                                                                                                                                                                                                                                                                                                                                  v.privileges)
+                                                                                                                                                                                                                                                                                                                                                  ,troop: typeof v.troop === "string" || typeof v.troop === "object" && v.troop instanceof String ? v.troop : _U.badPort("a string",
+                                                                                                                                                                                                                                                                                                                                                  v.troop)
+                                                                                                                                                                                                                                                                                                                                                  ,troop_id: typeof v.troop_id === "number" && isFinite(v.troop_id) && Math.floor(v.troop_id) === v.troop_id ? v.troop_id : _U.badPort("an integer",
+                                                                                                                                                                                                                                                                                                                                                  v.troop_id)
+                                                                                                                                                                                                                                                                                                                                                  ,troop_number: typeof v.troop_number === "string" || typeof v.troop_number === "object" && v.troop_number instanceof String ? v.troop_number : _U.badPort("a string",
+                                                                                                                                                                                                                                                                                                                                                  v.troop_number)
+                                                                                                                                                                                                                                                                                                                                                  ,troop_type: typeof v.troop_type === "string" || typeof v.troop_type === "object" && v.troop_type instanceof String ? v.troop_type : _U.badPort("a string",
+                                                                                                                                                                                                                                                                                                                                                  v.troop_type)
+                                                                                                                                                                                                                                                                                                                                                  ,troop_type_id: typeof v.troop_type_id === "number" && isFinite(v.troop_type_id) && Math.floor(v.troop_type_id) === v.troop_type_id ? v.troop_type_id : _U.badPort("an integer",
+                                                                                                                                                                                                                                                                                                                                                  v.troop_type_id)
+                                                                                                                                                                                                                                                                                                                                                  ,user_id: typeof v.user_id === "number" && isFinite(v.user_id) && Math.floor(v.user_id) === v.user_id ? v.user_id : _U.badPort("an integer",
+                                                                                                                                                                                                                                                                                                                                                  v.user_id)} : _U.badPort("an object with fields `token`, `privileges`, `troop`, `troop_id`, `troop_number`, `troop_type`, `troop_type_id`, `user_id`",
+                                                                                                                                                     v);
+                                                                                                                                                  })) : _U.badPort("an array",
+                                                                                                                                                  v.users)} : _U.badPort("an object with fields `partnerToken`, `users`",
+      v));
+   });
+   var setCurrentUserSignal = A2($Signal.map,$App$Update.CurrentUser,setCurrentUser);
+   var getCurrentUserSignal = Elm.Native.Port.make(_elm).outboundSignal("getCurrentUserSignal",
+   function (v) {
+      return [];
+   },
+   $App$Update.getCurrentUserBox.signal);
+   var storeUsersSignal = Elm.Native.Port.make(_elm).outboundSignal("storeUsersSignal",
+   function (v) {
+      return {partnerToken: v.partnerToken
+             ,users: Elm.Native.List.make(_elm).toArray(v.users).map(function (v) {
+                return {token: v.token
+                       ,privileges: Elm.Native.List.make(_elm).toArray(v.privileges).map(function (v) {    return v;})
+                       ,troop: v.troop
+                       ,troop_id: v.troop_id
+                       ,troop_number: v.troop_number
+                       ,troop_type: v.troop_type
+                       ,troop_type_id: v.troop_type_id
+                       ,user_id: v.user_id};
+             })};
+   },
+   $Login$Update.storeUsersBox.signal);
+   var app = $StartApp.start({init: $App$Update.init,update: $App$Update.update,view: $App$View.view,inputs: _U.list([setCurrentUserSignal])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
-   return _elm.App.values = {_op: _op,app: app,main: main};
+   return _elm.App.values = {_op: _op,app: app,main: main,setCurrentUserSignal: setCurrentUserSignal};
 };

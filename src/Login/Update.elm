@@ -5,23 +5,27 @@ import Task exposing (Task)
 import Http exposing (Error)
 import Json.Decode exposing (Decoder, (:=), string, int, list, object8, at)
 
-import Login.Model exposing (Model, User, initialModel)
+import Login.Model as LM exposing (Model)
 
 type Action
   = Username String
   | Password String
   | Authenticate
-  | UserToken (Result Error (List User))
+  | UserToken (Result Error (List LM.User))
+  | NoOp
 
 init : (Model, Effects action)
 init =
-  ( initialModel
+  ( LM.initialModel
   , Effects.none
   )
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
+
+    NoOp ->
+      (model, Effects.none)
 
     Username s ->
       ( { model | username = s }
@@ -53,7 +57,7 @@ update action model =
                 , errorMessage = Nothing
                 , successMessage = Just "Authenticated!"
               }
-            , Effects.none -- eventually store creds and go to next page
+            , storeCurrentUser newCredentials
             )
 
         Err error ->
@@ -67,7 +71,7 @@ update action model =
           )
 
 
--- Http
+-- Effects
 
 authenticate : Model -> Effects Action
 authenticate model =
@@ -76,7 +80,7 @@ authenticate model =
     |> Task.map UserToken
     |> Effects.task
 
-sendAuthRequest : Model -> Task Error (List User)
+sendAuthRequest : Model -> Task Error (List LM.User)
 sendAuthRequest model =
   Http.fromJson authDecoder
     <| Http.send Http.defaultSettings
@@ -90,19 +94,25 @@ sendAuthRequest model =
         , body = Http.empty
         }
 
+storeCurrentUser : LM.Credentials -> Effects Action
+storeCurrentUser credentials =
+  Signal.send storeUsersBox.address credentials
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
 -- Decoders
 
-authDecoder : Decoder (List User)
+authDecoder : Decoder (List LM.User)
 authDecoder =
   at ["users"] userListDecoder
 
-userListDecoder : Decoder (List User)
+userListDecoder : Decoder (List LM.User)
 userListDecoder =
   list userDecoder
 
-userDecoder : Decoder User
+userDecoder : Decoder LM.User
 userDecoder =
-  object8 User
+  object8 LM.User
     ("token" := string)
     ("privileges" := list string)
     ("troop" := string)
@@ -111,3 +121,9 @@ userDecoder =
     ("troop_type" := string)
     ("troop_type_id" := int)
     ("user_id" := int)
+
+-- Mailboxes
+
+storeUsersBox : Signal.Mailbox LM.Credentials
+storeUsersBox =
+  Signal.mailbox LM.initialCredentials

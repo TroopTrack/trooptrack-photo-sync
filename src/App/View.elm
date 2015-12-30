@@ -8,10 +8,14 @@ import App.Update exposing (Action(..))
 
 import Login.View as Login
 import PhotoAlbum.View as PhotoAlbum
+import Loading.View as Loading
 
 view : Address Action -> Model -> Html
 view address model =
   case model.page of
+
+    LoadingPage ->
+      Loading.view
 
     LoginPage ->
       Login.view

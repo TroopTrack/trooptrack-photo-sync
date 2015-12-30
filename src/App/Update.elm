@@ -4,22 +4,47 @@ import Effects exposing (Effects)
 
 import App.Model exposing (Model, Page(..), initialModel)
 
+import Login.Model as LoginM
 import Login.Update as Login
 
 type Action
   = Authentication Login.Action
+  | NoOp
+  | CurrentUser (Maybe LoginM.Credentials)
 
 
 init : (Model, Effects Action)
 init =
   ( initialModel
-  , Effects.none
+  , getCurrentUser
   )
 
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
+
+    NoOp ->
+      (model, Effects.none)
+
+    CurrentUser maybeCreds ->
+      case maybeCreds of
+        Nothing ->
+          ( { model | page = LoginPage }
+          , Effects.none
+          )
+
+        Just creds ->
+          let
+            loginInfo =
+              model.loginInfo
+
+            newLoginInfo =
+              { loginInfo | credentials = creds }
+          in
+            ( { model | loginInfo = newLoginInfo, page = PhotoAlbumPage }
+            , Effects.none
+            )
 
     Authentication creds ->
       let
@@ -39,3 +64,17 @@ update action model =
         ( { model | loginInfo = login, page = page }
         , Effects.map Authentication fx
         )
+
+--- Effects
+
+getCurrentUser : Effects Action
+getCurrentUser =
+  Signal.send getCurrentUserBox.address ()
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
+-- Mailboxes
+
+getCurrentUserBox : Signal.Mailbox ()
+getCurrentUserBox =
+  Signal.mailbox ()
