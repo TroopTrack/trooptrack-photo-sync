@@ -10982,13 +10982,11 @@ Elm.StartApp.make = function (_elm) {
    var Config = F4(function (a,b,c,d) {    return {init: a,update: b,view: c,inputs: d};});
    return _elm.StartApp.values = {_op: _op,start: start,Config: Config,App: App};
 };
-Elm.Login = Elm.Login || {};
-Elm.Login.Model = Elm.Login.Model || {};
-Elm.Login.Model.make = function (_elm) {
+Elm.Credentials = Elm.Credentials || {};
+Elm.Credentials.make = function (_elm) {
    "use strict";
-   _elm.Login = _elm.Login || {};
-   _elm.Login.Model = _elm.Login.Model || {};
-   if (_elm.Login.Model.values) return _elm.Login.Model.values;
+   _elm.Credentials = _elm.Credentials || {};
+   if (_elm.Credentials.values) return _elm.Credentials.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
@@ -10998,23 +10996,36 @@ Elm.Login.Model.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var initialCredentials = {partnerToken: "8pOsq6XbBVtcV_0Uy49EHA",users: _U.list([])};
-   var initialModel = {username: ""
-                      ,password: ""
-                      ,authenticating: false
-                      ,credentials: initialCredentials
-                      ,errorMessage: $Maybe.Nothing
-                      ,successMessage: $Maybe.Nothing};
    var User = F8(function (a,b,c,d,e,f,g,h) {
       return {token: a,privileges: b,troop: c,troop_id: d,troop_number: e,troop_type: f,troop_type_id: g,user_id: h};
    });
    var Credentials = F2(function (a,b) {    return {partnerToken: a,users: b};});
+   return _elm.Credentials.values = {_op: _op,Credentials: Credentials,User: User,initialCredentials: initialCredentials};
+};
+Elm.Login = Elm.Login || {};
+Elm.Login.Model = Elm.Login.Model || {};
+Elm.Login.Model.make = function (_elm) {
+   "use strict";
+   _elm.Login = _elm.Login || {};
+   _elm.Login.Model = _elm.Login.Model || {};
+   if (_elm.Login.Model.values) return _elm.Login.Model.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var initialModel = {username: ""
+                      ,password: ""
+                      ,authenticating: false
+                      ,credentials: $Credentials.initialCredentials
+                      ,errorMessage: $Maybe.Nothing
+                      ,successMessage: $Maybe.Nothing};
    var Model = F6(function (a,b,c,d,e,f) {    return {username: a,password: b,authenticating: c,credentials: d,errorMessage: e,successMessage: f};});
-   return _elm.Login.Model.values = {_op: _op
-                                    ,Model: Model
-                                    ,Credentials: Credentials
-                                    ,User: User
-                                    ,initialModel: initialModel
-                                    ,initialCredentials: initialCredentials};
+   return _elm.Login.Model.values = {_op: _op,Model: Model,initialModel: initialModel};
 };
 Elm.App = Elm.App || {};
 Elm.App.Model = Elm.App.Model || {};
@@ -11053,6 +11064,7 @@ Elm.Login.Update.make = function (_elm) {
    if (_elm.Login.Update.values) return _elm.Login.Update.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Http = Elm.Http.make(_elm),
@@ -11064,9 +11076,9 @@ Elm.Login.Update.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var storeUsersBox = $Signal.mailbox($Login$Model.initialCredentials);
+   var storeUsersBox = $Signal.mailbox($Credentials.initialCredentials);
    var userDecoder = A9($Json$Decode.object8,
-   $Login$Model.User,
+   $Credentials.User,
    A2($Json$Decode._op[":="],"token",$Json$Decode.string),
    A2($Json$Decode._op[":="],"privileges",$Json$Decode.list($Json$Decode.string)),
    A2($Json$Decode._op[":="],"troop",$Json$Decode.string),
@@ -11147,10 +11159,10 @@ Elm.App.Update.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $App$Model = Elm.App.Model.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $List = Elm.List.make(_elm),
-   $Login$Model = Elm.Login.Model.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
@@ -11316,6 +11328,7 @@ Elm.PhotoAlbum.View.make = function (_elm) {
    if (_elm.PhotoAlbum.View.values) return _elm.PhotoAlbum.View.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
@@ -11331,23 +11344,27 @@ Elm.PhotoAlbum.View.make = function (_elm) {
    var thumbnails = A2($Html.div,
    _U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),
    _U.list([thumbnail,thumbnail,thumbnail,thumbnail,thumbnail]));
-   var menuItem = function (name) {
-      return A2($Html.li,_U.list([]),_U.list([A2($Html.a,_U.list([$Html$Attributes.href("#")]),_U.list([$Html.text(name)]))]));
+   var menuItem = function (user) {
+      return A2($Html.li,_U.list([]),_U.list([A2($Html.a,_U.list([$Html$Attributes.href("#")]),_U.list([$Html.text(user.troop)]))]));
    };
-   var troopMenu = A2($Html.ul,
-   _U.list([$Html$Attributes.$class("menu vertical")]),
-   _U.list([menuItem("Troop1"),menuItem("Troop2"),menuItem("Troop3"),menuItem("Troop124")]));
+   var troopMenu = function (credentials) {
+      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu vertical")]),A2($List.map,menuItem,credentials.users));
+   };
    var content = A2($Html.div,
    _U.list([$Html$Attributes.$class("medium-9 large-10 medium-push-3 large-push-2 columns")]),
    _U.list([A2($Html.br,_U.list([]),_U.list([])),thumbnails]));
    var troopSelectionStyles = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "background",_1: "#f7f7f7"}]));
-   var troopSelection = A2($Html.div,
-   _U.list([$Html$Attributes.$class("medium-3 large-2 medium-pull-9 large-pull-10 columns troop-menu"),troopSelectionStyles]),
-   _U.list([A2($Html.br,_U.list([]),_U.list([]))
-           ,A2($Html.div,_U.list([]),_U.list([$Html.text("Select a Troop")]))
-           ,A2($Html.hr,_U.list([]),_U.list([]))
-           ,troopMenu]));
-   var view = A2($Html.div,_U.list([$Html$Attributes.$class("expanded row")]),_U.list([content,troopSelection]));
+   var troopSelection = function (credentials) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("medium-3 large-2 medium-pull-9 large-pull-10 columns troop-menu"),troopSelectionStyles]),
+      _U.list([A2($Html.br,_U.list([]),_U.list([]))
+              ,A2($Html.div,_U.list([]),_U.list([$Html.text("Select a Troop")]))
+              ,A2($Html.hr,_U.list([]),_U.list([]))
+              ,troopMenu(credentials)]));
+   };
+   var view = function (credentials) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class("expanded row")]),_U.list([content,troopSelection(credentials)]));
+   };
    return _elm.PhotoAlbum.View.values = {_op: _op
                                         ,view: view
                                         ,troopSelection: troopSelection
@@ -11403,7 +11420,7 @@ Elm.App.View.make = function (_elm) {
       switch (_p0.ctor)
       {case "LoadingPage": return $Loading$View.view;
          case "LoginPage": return A2($Login$View.view,A2($Signal.forwardTo,address,$App$Update.Authentication),model.loginInfo);
-         default: return $PhotoAlbum$View.view;}
+         default: return $PhotoAlbum$View.view(model.loginInfo.credentials);}
    });
    return _elm.App.View.values = {_op: _op,view: view};
 };
@@ -11417,10 +11434,10 @@ Elm.App.make = function (_elm) {
    $App$Update = Elm.App.Update.make(_elm),
    $App$View = Elm.App.View.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $List = Elm.List.make(_elm),
-   $Login$Model = Elm.Login.Model.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
@@ -11429,7 +11446,7 @@ Elm.App.make = function (_elm) {
    $Task = Elm.Task.make(_elm);
    var _op = {};
    var setCurrentUser = Elm.Native.Port.make(_elm).inboundSignal("setCurrentUser",
-   "Maybe.Maybe\n    Login.Model.Credentials",
+   "Maybe.Maybe\n    Credentials.Credentials",
    function (v) {
       return v === null ? Elm.Maybe.make(_elm).Nothing : Elm.Maybe.make(_elm).Just(typeof v === "object" && "partnerToken" in v && "users" in v ? {_: {}
                                                                                                                                                   ,partnerToken: typeof v.partnerToken === "string" || typeof v.partnerToken === "object" && v.partnerToken instanceof String ? v.partnerToken : _U.badPort("a string",

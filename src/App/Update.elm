@@ -4,13 +4,14 @@ import Effects exposing (Effects)
 
 import App.Model exposing (Model, Page(..), initialModel)
 
-import Login.Model as LoginM
 import Login.Update as Login
+import Credentials as C
+
 
 type Action
   = Authentication Login.Action
   | NoOp
-  | CurrentUser (Maybe LoginM.Credentials)
+  | CurrentUser (Maybe C.Credentials)
 
 
 init : (Model, Effects Action)

@@ -6,19 +6,22 @@ import Http exposing (Error)
 import Json.Decode exposing (Decoder, (:=), string, int, list, object8, at)
 
 import Login.Model as LM exposing (Model)
+import Credentials as C
 
 type Action
   = Username String
   | Password String
   | Authenticate
-  | UserToken (Result Error (List LM.User))
+  | UserToken (Result Error (List C.User))
   | NoOp
+
 
 init : (Model, Effects action)
 init =
   ( LM.initialModel
   , Effects.none
   )
+
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -82,7 +85,8 @@ authenticate model =
     |> Task.map UserToken
     |> Effects.task
 
-sendAuthRequest : Model -> Task Error (List LM.User)
+
+sendAuthRequest : Model -> Task Error (List C.User)
 sendAuthRequest model =
   Http.fromJson authDecoder
     <| Http.send Http.defaultSettings
@@ -96,7 +100,8 @@ sendAuthRequest model =
         , body = Http.empty
         }
 
-storeCurrentUser : LM.Credentials -> Effects Action
+
+storeCurrentUser : C.Credentials -> Effects Action
 storeCurrentUser credentials =
   Signal.send storeUsersBox.address credentials
     |> Effects.task
@@ -104,17 +109,19 @@ storeCurrentUser credentials =
 
 -- Decoders
 
-authDecoder : Decoder (List LM.User)
+authDecoder : Decoder (List C.User)
 authDecoder =
   at ["users"] userListDecoder
 
-userListDecoder : Decoder (List LM.User)
+
+userListDecoder : Decoder (List C.User)
 userListDecoder =
   list userDecoder
 
-userDecoder : Decoder LM.User
+
+userDecoder : Decoder C.User
 userDecoder =
-  object8 LM.User
+  object8 C.User
     ("token" := string)
     ("privileges" := list string)
     ("troop" := string)
@@ -126,6 +133,6 @@ userDecoder =
 
 -- Mailboxes
 
-storeUsersBox : Signal.Mailbox LM.Credentials
+storeUsersBox : Signal.Mailbox C.Credentials
 storeUsersBox =
-  Signal.mailbox LM.initialCredentials
+  Signal.mailbox C.initialCredentials

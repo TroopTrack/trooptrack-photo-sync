@@ -3,18 +3,20 @@ module PhotoAlbum.View where
 import Html as H exposing (Html, Attribute)
 import Html.Attributes as A
 
+import Credentials as C
 
-view : Html
-view =
+
+view : C.Credentials -> Html
+view credentials =
  H.div
   [ A.class "expanded row" ]
   [ content
-  , troopSelection
+  , troopSelection credentials
   ]
 
 
-troopSelection : Html
-troopSelection =
+troopSelection : C.Credentials -> Html
+troopSelection credentials =
   H.div
     [ A.class "medium-3 large-2 medium-pull-9 large-pull-10 columns troop-menu"
     , troopSelectionStyles
@@ -22,7 +24,7 @@ troopSelection =
     [ H.br [] []
     , H.div [] [ H.text "Select a Troop" ]
     , H.hr [] []
-    , troopMenu
+    , troopMenu credentials
     ]
 
 
@@ -40,22 +42,18 @@ content =
     ]
 
 
-troopMenu : Html
-troopMenu =
+troopMenu : C.Credentials -> Html
+troopMenu credentials =
   H.ul
     [ A.class "menu vertical" ]
-    [ menuItem "Troop1"
-    , menuItem "Troop2"
-    , menuItem "Troop3"
-    , menuItem "Troop124"
-    ]
+    <| List.map menuItem credentials.users
 
 
-menuItem : String -> Html
-menuItem name =
+menuItem : C.User -> Html
+menuItem user =
   H.li
     []
-    [ H.a [ A.href "#" ] [ H.text name ] ]
+    [ H.a [ A.href "#" ] [ H.text user.troop ] ]
 
 
 thumbnails : Html

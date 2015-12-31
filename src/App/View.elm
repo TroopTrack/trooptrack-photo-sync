@@ -23,4 +23,4 @@ view address model =
         model.loginInfo
 
     PhotoAlbumPage ->
-      PhotoAlbum.view
+      PhotoAlbum.view model.loginInfo.credentials

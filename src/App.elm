@@ -8,7 +8,7 @@ import App.Model exposing (Model)
 import App.View exposing (view)
 import App.Update as AppU exposing (update, init, getCurrentUserBox)
 
-import Login.Model as Login
+import Credentials as C
 import Login.Update exposing (storeUsersBox)
 
 app : StartApp.App Model
@@ -31,7 +31,7 @@ port tasks : Signal (Task.Task Effects.Never ())
 port tasks =
   app.tasks
 
-port storeUsersSignal : Signal Login.Credentials
+port storeUsersSignal : Signal C.Credentials
 port storeUsersSignal =
   storeUsersBox.signal
 
@@ -39,7 +39,7 @@ port getCurrentUserSignal : Signal ()
 port getCurrentUserSignal =
   getCurrentUserBox.signal
 
-port setCurrentUser : Signal (Maybe (Login.Credentials))
+port setCurrentUser : Signal (Maybe (C.Credentials))
 
 setCurrentUserSignal : Signal AppU.Action
 setCurrentUserSignal =

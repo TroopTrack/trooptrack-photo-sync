@@ -11,9 +11,11 @@ import Layouts
 import Login.Update exposing (Action(..))
 import Login.Model exposing (Model)
 
+
 view : Address Action -> Model -> Html
 view address model =
   Layouts.centered [ viewContent address model ]
+
 
 viewContent : Address Action -> Model -> Html
 viewContent address model =
@@ -35,6 +37,7 @@ viewContent address model =
     , forgotPassword
     ]
 
+
 errorMessage : Model -> Html
 errorMessage model =
   case model.errorMessage of
@@ -43,6 +46,7 @@ errorMessage model =
 
     Just msg ->
       H.div [ A.class "text-center alert callout" ] [ H.text msg ]
+
 
 successMessage : Model -> Html
 successMessage model =
@@ -53,6 +57,7 @@ successMessage model =
     Just msg ->
       H.div [ A.class "text-center success callout" ] [ H.text msg ]
 
+
 field : String -> List Attribute -> Html
 field name attributes =
   let
@@ -60,6 +65,7 @@ field name attributes =
       [ A.placeholder name ] ++ attributes
   in
     H.input enhancedAttributes []
+
 
 submitButton : Address Action -> Model -> Html
 submitButton address model =
@@ -81,6 +87,7 @@ submitButton address model =
           [ H.text buttonText ]
       ]
 
+
 forgotPassword : Html
 forgotPassword =
   H.p [ A.class "text-center" ]
@@ -88,6 +95,7 @@ forgotPassword =
       [ A.href "#" ]
       [ H.text "Forgot your password?" ]
     ]
+
 
 toMessage : Address action -> (b -> action) -> b -> Signal.Message
 toMessage address toAction val =
