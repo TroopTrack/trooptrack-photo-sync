@@ -6,9 +6,8 @@ module.exports.connectTo = function connectTo(elmThing) {
 }
 
 
+var userDb = new PouchDB("dbs/photo_sync_users", {adapter: 'websql'});
 
-var PouchDB = require('pouchdb');
-var userDb = new PouchDB("dbs/photo_sync_users");
 
 function storeCurrentUser(credentials) {
   userDb.get('current_user').then(function(doc) {
@@ -28,6 +27,7 @@ function storeCurrentUser(credentials) {
     }
   });
 };
+
 
 function getCurrentUser(elmThing) {
   return function getCurrentUserImpl() {

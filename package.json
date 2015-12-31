@@ -17,6 +17,5 @@
     "watch": "^0.17.1"
   },
   "dependencies": {
-    "pouchdb": "^5.1.0"
   }
 }
