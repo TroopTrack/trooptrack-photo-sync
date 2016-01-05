@@ -1,22 +1,27 @@
 module PhotoAlbum.View where
 
+import Signal exposing (Address)
+
 import Html as H exposing (Html, Attribute)
 import Html.Attributes as A
+import Html.Events as E
 
 import Credentials as C
+import PhotoAlbum.Update as Update
+import PhotoAlbum.Model exposing (Model, PhotoAlbum)
 
 
-view : C.Credentials -> Html
-view credentials =
+view : Address Update.Action -> C.Credentials -> Model -> Html
+view address credentials model =
  H.div
   [ A.class "expanded row" ]
-  [ content
-  , troopSelection credentials
+  [ content model
+  , troopSelection address credentials
   ]
 
 
-troopSelection : C.Credentials -> Html
-troopSelection credentials =
+troopSelection : Address Update.Action -> C.Credentials -> Html
+troopSelection address credentials =
   H.div
     [ A.class "medium-3 large-2 medium-pull-9 large-pull-10 columns troop-menu"
     , troopSelectionStyles
@@ -24,7 +29,7 @@ troopSelection credentials =
     [ H.br [] []
     , H.div [] [ H.text "Select a Troop" ]
     , H.hr [] []
-    , troopMenu credentials
+    , troopMenu address credentials
     ]
 
 
@@ -33,51 +38,60 @@ troopSelectionStyles =
   A.style
     [ ( "background", "#f7f7f7" ) ]
 
-content : Html
-content =
+content : Model -> Html
+content model =
   H.div
     [ A.class "medium-9 large-10 medium-push-3 large-push-2 columns" ]
     [ H.br [] []
-    , thumbnails
+    , thumbnails model
     ]
 
 
-troopMenu : C.Credentials -> Html
-troopMenu credentials =
+troopMenu : Address Update.Action -> C.Credentials -> Html
+troopMenu address credentials =
   H.ul
     [ A.class "menu vertical" ]
-    <| List.map menuItem credentials.users
+    <| List.map (menuItem address) credentials.users
 
 
-menuItem : C.User -> Html
-menuItem user =
+menuItem : Address Update.Action -> C.User -> Html
+menuItem address user =
   H.li
     []
-    [ H.a [ A.href "#" ] [ H.text user.troop ] ]
+    [ H.a
+      [ A.href "#"
+      , E.onClick address <| Update.LoadPhotoAlbums user
+      ]
+      [ H.text user.troop ] ]
 
 
-thumbnails : Html
-thumbnails =
+thumbnails : Model -> Html
+thumbnails model =
   H.div
     [ A.class "row small-up-2 medium-up-3 large-up-4" ]
-    [ thumbnail
-    , thumbnail
-    , thumbnail
-    , thumbnail
-    , thumbnail
-    ]
+    <| List.map thumbnail model.photoAlbums
 
 
-thumbnail : Html
-thumbnail =
-  H.div
-    [ A.class "column" ]
-    [ H.img
-      [ A.class "thumbnail"
-      , A.src "http://placehold.it/550x550"
+thumbnail : PhotoAlbum -> Html
+thumbnail album =
+  let
+    photoUrl =
+      List.head album.photos
+        |> Maybe.map .photoUrl
+        |> Maybe.withDefault "http://placehold.it/550x550"
+  in
+    H.div
+      [ A.class "column" ]
+      [ H.img
+        [ A.class "thumbnail"
+        , A.src photoUrl
+        ]
+        []
+      , H.h5
+        []
+        [ H.text <| albumName album ]
       ]
-      []
-    , H.h5
-      []
-      [ H.text "A Photo Album" ]
-    ]
+
+albumName : PhotoAlbum -> String
+albumName album =
+  album.name ++ " (" ++ album.takenOn ++ ")"

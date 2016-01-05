@@ -5,11 +5,13 @@ import Effects exposing (Effects)
 import App.Model exposing (Model, Page(..), initialModel)
 
 import Login.Update as Login
+import PhotoAlbum.Update
 import Credentials as C
 
 
 type Action
   = Authentication Login.Action
+  | PhotoAlbums PhotoAlbum.Update.Action
   | NoOp
   | CurrentUser (Maybe C.Credentials)
 
@@ -65,6 +67,19 @@ update action model =
         ( { model | loginInfo = login, page = page }
         , Effects.map Authentication fx
         )
+
+    PhotoAlbums photoAlbumAct ->
+      let
+        credentials =
+          model.loginInfo.credentials
+
+        (newPhotoAlbum, fx) =
+          PhotoAlbum.Update.update photoAlbumAct credentials.partnerToken model.photoAlbum
+      in
+        ( { model | photoAlbum = newPhotoAlbum }
+        , Effects.map PhotoAlbums fx
+        )
+
 
 --- Effects
 

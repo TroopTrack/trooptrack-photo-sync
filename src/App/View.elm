@@ -23,4 +23,7 @@ view address model =
         model.loginInfo
 
     PhotoAlbumPage ->
-      PhotoAlbum.view model.loginInfo.credentials
+      PhotoAlbum.view
+        (Signal.forwardTo address App.Update.PhotoAlbums)
+        model.loginInfo.credentials
+        model.photoAlbum

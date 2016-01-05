@@ -11027,6 +11027,28 @@ Elm.Login.Model.make = function (_elm) {
    var Model = F6(function (a,b,c,d,e,f) {    return {username: a,password: b,authenticating: c,credentials: d,errorMessage: e,successMessage: f};});
    return _elm.Login.Model.values = {_op: _op,Model: Model,initialModel: initialModel};
 };
+Elm.PhotoAlbum = Elm.PhotoAlbum || {};
+Elm.PhotoAlbum.Model = Elm.PhotoAlbum.Model || {};
+Elm.PhotoAlbum.Model.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbum = _elm.PhotoAlbum || {};
+   _elm.PhotoAlbum.Model = _elm.PhotoAlbum.Model || {};
+   if (_elm.PhotoAlbum.Model.values) return _elm.PhotoAlbum.Model.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var initialModel = {photoAlbums: _U.list([]),errorMessage: $Maybe.Nothing,user: $Maybe.Nothing};
+   var Photo = F2(function (a,b) {    return {photoUrl: a,photoId: b};});
+   var PhotoAlbum = F5(function (a,b,c,d,e) {    return {name: a,takenOn: b,photoCount: c,photoAlbumId: d,photos: e};});
+   var Model = F3(function (a,b,c) {    return {photoAlbums: a,errorMessage: b,user: c};});
+   return _elm.PhotoAlbum.Model.values = {_op: _op,Model: Model,PhotoAlbum: PhotoAlbum,Photo: Photo,initialModel: initialModel};
+};
 Elm.App = Elm.App || {};
 Elm.App.Model = Elm.App.Model || {};
 Elm.App.Model.make = function (_elm) {
@@ -11040,14 +11062,15 @@ Elm.App.Model.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Login$Model = Elm.Login.Model.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbum$Model = Elm.PhotoAlbum.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var LoadingPage = {ctor: "LoadingPage"};
-   var initialModel = {page: LoadingPage,loginInfo: $Login$Model.initialModel};
+   var initialModel = {page: LoadingPage,loginInfo: $Login$Model.initialModel,photoAlbum: $PhotoAlbum$Model.initialModel};
    var PhotoAlbumPage = {ctor: "PhotoAlbumPage"};
    var LoginPage = {ctor: "LoginPage"};
-   var Model = F2(function (a,b) {    return {page: a,loginInfo: b};});
+   var Model = F3(function (a,b,c) {    return {page: a,loginInfo: b,photoAlbum: c};});
    return _elm.App.Model.values = {_op: _op
                                   ,Model: Model
                                   ,LoginPage: LoginPage
@@ -11149,6 +11172,122 @@ Elm.Login.Update.make = function (_elm) {
                                      ,userDecoder: userDecoder
                                      ,storeUsersBox: storeUsersBox};
 };
+Elm.PhotoAlbum = Elm.PhotoAlbum || {};
+Elm.PhotoAlbum.Update = Elm.PhotoAlbum.Update || {};
+Elm.PhotoAlbum.Update.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbum = _elm.PhotoAlbum || {};
+   _elm.PhotoAlbum.Update = _elm.PhotoAlbum.Update || {};
+   if (_elm.PhotoAlbum.Update.values) return _elm.PhotoAlbum.Update.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbum$Model = Elm.PhotoAlbum.Model.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var networkErrorMessage = function (err) {
+      var _p0 = err;
+      switch (_p0.ctor)
+      {case "Timeout": return "Having trouble reaching the server";
+         case "NetworkError": return "You don\'t appear to be conencted to the network";
+         case "UnexpectedPayload": return A2($Basics._op["++"],"Received an unexpected result from the server: ",_p0._0);
+         default: return A2($Basics._op["++"],
+           "Error communicating with the server: ",
+           A2($Basics._op["++"],$Basics.toString(_p0._0),A2($Basics._op["++"]," --  ",_p0._1)));}
+   };
+   var photoDecoder = A3($Json$Decode.object2,
+   $PhotoAlbum$Model.Photo,
+   A2($Json$Decode._op[":="],"photo",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"troop_photo_id",$Json$Decode.$int));
+   var photoAlbumDecoder = A6($Json$Decode.object5,
+   $PhotoAlbum$Model.PhotoAlbum,
+   A2($Json$Decode._op[":="],"name",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"taken_on",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"photo_count",$Json$Decode.$int),
+   A2($Json$Decode._op[":="],"photo_album_id",$Json$Decode.$int),
+   $Json$Decode.oneOf(_U.list([A2($Json$Decode._op[":="],"troop_photos",$Json$Decode.list(photoDecoder)),$Json$Decode.succeed(_U.list([]))])));
+   var photoAlbumsDecoder = A2($Json$Decode.at,_U.list(["photo_albums"]),$Json$Decode.list(photoAlbumDecoder));
+   var sendPhotoAlbumDetailsRequest = F3(function (partnerToken,user,album) {
+      return A2($Http.fromJson,
+      photoAlbumDecoder,
+      A2($Http.send,
+      $Http.defaultSettings,
+      {verb: "GET"
+      ,headers: _U.list([{ctor: "_Tuple2",_0: "X-Partner-Token",_1: partnerToken},{ctor: "_Tuple2",_0: "X-User-Token",_1: user.token}])
+      ,url: A2($Basics._op["++"],"http://trooptrack.dev/api/v1/photo_albums/",$Basics.toString(album.photoAlbumId))
+      ,body: $Http.empty}));
+   });
+   var sendPhotoAlbumsRequest = F2(function (partnerToken,user) {
+      return A2($Http.fromJson,
+      photoAlbumsDecoder,
+      A2($Http.send,
+      $Http.defaultSettings,
+      {verb: "GET"
+      ,headers: _U.list([{ctor: "_Tuple2",_0: "X-Partner-Token",_1: partnerToken},{ctor: "_Tuple2",_0: "X-User-Token",_1: user.token}])
+      ,url: "http://trooptrack.dev/api/v1/photo_albums"
+      ,body: $Http.empty}));
+   });
+   var NoOp = {ctor: "NoOp"};
+   var UpdatePhotoAlbum = function (a) {    return {ctor: "UpdatePhotoAlbum",_0: a};};
+   var fetchAlbumDetails = F3(function (partnerToken,user,album) {
+      var _p1 = user;
+      if (_p1.ctor === "Nothing") {
+            return $Effects.task(A2($Task.map,$Basics.always(NoOp),$Task.succeed({ctor: "_Tuple0"})));
+         } else {
+            return $Effects.task(A2($Task.map,UpdatePhotoAlbum,$Task.toResult(A3(sendPhotoAlbumDetailsRequest,partnerToken,_p1._0,album))));
+         }
+   });
+   var DisplayPhotoAlbums = function (a) {    return {ctor: "DisplayPhotoAlbums",_0: a};};
+   var loadPhotoAlbums = F2(function (partnerToken,user) {
+      return $Effects.task(A2($Task.map,DisplayPhotoAlbums,$Task.toResult(A2(sendPhotoAlbumsRequest,partnerToken,user))));
+   });
+   var update = F3(function (action,partnerToken,model) {
+      var _p2 = action;
+      switch (_p2.ctor)
+      {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "LoadPhotoAlbums": var _p3 = _p2._0;
+           return {ctor: "_Tuple2",_0: _U.update(model,{user: $Maybe.Just(_p3)}),_1: A2(loadPhotoAlbums,partnerToken,_p3)};
+         case "DisplayPhotoAlbums": var _p4 = _p2._0;
+           if (_p4.ctor === "Ok") {
+                 var _p5 = _p4._0;
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.update(model,{photoAlbums: _p5,errorMessage: $Maybe.Nothing})
+                        ,_1: $Effects.batch(A2($List.map,A2(fetchAlbumDetails,partnerToken,model.user),_p5))};
+              } else {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{errorMessage: $Maybe.Just(networkErrorMessage(_p4._0))}),_1: $Effects.none};
+              }
+         default: var _p6 = _p2._0;
+           if (_p6.ctor === "Ok") {
+                 var updateAlbum = F2(function ($new,old) {    return _U.eq($new.photoAlbumId,old.photoAlbumId) ? $new : old;});
+                 return {ctor: "_Tuple2",_0: _U.update(model,{photoAlbums: A2($List.map,updateAlbum(_p6._0),model.photoAlbums)}),_1: $Effects.none};
+              } else {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{errorMessage: $Maybe.Just(networkErrorMessage(_p6._0))}),_1: $Effects.none};
+              }}
+   });
+   var LoadPhotoAlbums = function (a) {    return {ctor: "LoadPhotoAlbums",_0: a};};
+   return _elm.PhotoAlbum.Update.values = {_op: _op
+                                          ,LoadPhotoAlbums: LoadPhotoAlbums
+                                          ,DisplayPhotoAlbums: DisplayPhotoAlbums
+                                          ,UpdatePhotoAlbum: UpdatePhotoAlbum
+                                          ,NoOp: NoOp
+                                          ,update: update
+                                          ,loadPhotoAlbums: loadPhotoAlbums
+                                          ,sendPhotoAlbumsRequest: sendPhotoAlbumsRequest
+                                          ,fetchAlbumDetails: fetchAlbumDetails
+                                          ,sendPhotoAlbumDetailsRequest: sendPhotoAlbumDetailsRequest
+                                          ,photoAlbumsDecoder: photoAlbumsDecoder
+                                          ,photoAlbumDecoder: photoAlbumDecoder
+                                          ,photoDecoder: photoDecoder
+                                          ,networkErrorMessage: networkErrorMessage};
+};
 Elm.App = Elm.App || {};
 Elm.App.Update = Elm.App.Update || {};
 Elm.App.Update.make = function (_elm) {
@@ -11165,6 +11304,7 @@ Elm.App.Update.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbum$Update = Elm.PhotoAlbum.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
@@ -11173,6 +11313,7 @@ Elm.App.Update.make = function (_elm) {
    var NoOp = {ctor: "NoOp"};
    var getCurrentUser = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,getCurrentUserBox.address,{ctor: "_Tuple0"})));
    var init = {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
+   var PhotoAlbums = function (a) {    return {ctor: "PhotoAlbums",_0: a};};
    var Authentication = function (a) {    return {ctor: "Authentication",_0: a};};
    var update = F2(function (action,model) {
       var _p0 = action;
@@ -11186,15 +11327,21 @@ Elm.App.Update.make = function (_elm) {
                  var newLoginInfo = _U.update(loginInfo,{credentials: _p1._0});
                  return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: newLoginInfo,page: $App$Model.PhotoAlbumPage}),_1: $Effects.none};
               }
-         default: var _p2 = A2($Login$Update.update,_p0._0,model.loginInfo);
+         case "Authentication": var _p2 = A2($Login$Update.update,_p0._0,model.loginInfo);
            var login = _p2._0;
            var fx = _p2._1;
            var users = login.credentials.users;
            var page = $List.isEmpty(users) ? model.page : $App$Model.PhotoAlbumPage;
-           return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: login,page: page}),_1: A2($Effects.map,Authentication,fx)};}
+           return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: login,page: page}),_1: A2($Effects.map,Authentication,fx)};
+         default: var credentials = model.loginInfo.credentials;
+           var _p3 = A3($PhotoAlbum$Update.update,_p0._0,credentials.partnerToken,model.photoAlbum);
+           var newPhotoAlbum = _p3._0;
+           var fx = _p3._1;
+           return {ctor: "_Tuple2",_0: _U.update(model,{photoAlbum: newPhotoAlbum}),_1: A2($Effects.map,PhotoAlbums,fx)};}
    });
    return _elm.App.Update.values = {_op: _op
                                    ,Authentication: Authentication
+                                   ,PhotoAlbums: PhotoAlbums
                                    ,NoOp: NoOp
                                    ,CurrentUser: CurrentUser
                                    ,init: init
@@ -11332,39 +11479,52 @@ Elm.PhotoAlbum.View.make = function (_elm) {
    $Debug = Elm.Debug.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbum$Model = Elm.PhotoAlbum.Model.make(_elm),
+   $PhotoAlbum$Update = Elm.PhotoAlbum.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var thumbnail = A2($Html.div,
-   _U.list([$Html$Attributes.$class("column")]),
-   _U.list([A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src("http://placehold.it/550x550")]),_U.list([]))
-           ,A2($Html.h5,_U.list([]),_U.list([$Html.text("A Photo Album")]))]));
-   var thumbnails = A2($Html.div,
-   _U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),
-   _U.list([thumbnail,thumbnail,thumbnail,thumbnail,thumbnail]));
-   var menuItem = function (user) {
-      return A2($Html.li,_U.list([]),_U.list([A2($Html.a,_U.list([$Html$Attributes.href("#")]),_U.list([$Html.text(user.troop)]))]));
+   var albumName = function (album) {    return A2($Basics._op["++"],album.name,A2($Basics._op["++"]," (",A2($Basics._op["++"],album.takenOn,")")));};
+   var thumbnail = function (album) {
+      var photoUrl = A2($Maybe.withDefault,"http://placehold.it/550x550",A2($Maybe.map,function (_) {    return _.photoUrl;},$List.head(album.photos)));
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("column")]),
+      _U.list([A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photoUrl)]),_U.list([]))
+              ,A2($Html.h5,_U.list([]),_U.list([$Html.text(albumName(album))]))]));
    };
-   var troopMenu = function (credentials) {
-      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu vertical")]),A2($List.map,menuItem,credentials.users));
+   var thumbnails = function (model) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),A2($List.map,thumbnail,model.photoAlbums));
    };
-   var content = A2($Html.div,
-   _U.list([$Html$Attributes.$class("medium-9 large-10 medium-push-3 large-push-2 columns")]),
-   _U.list([A2($Html.br,_U.list([]),_U.list([])),thumbnails]));
+   var menuItem = F2(function (address,user) {
+      return A2($Html.li,
+      _U.list([]),
+      _U.list([A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbum$Update.LoadPhotoAlbums(user))]),
+      _U.list([$Html.text(user.troop)]))]));
+   });
+   var troopMenu = F2(function (address,credentials) {
+      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu vertical")]),A2($List.map,menuItem(address),credentials.users));
+   });
+   var content = function (model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("medium-9 large-10 medium-push-3 large-push-2 columns")]),
+      _U.list([A2($Html.br,_U.list([]),_U.list([])),thumbnails(model)]));
+   };
    var troopSelectionStyles = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "background",_1: "#f7f7f7"}]));
-   var troopSelection = function (credentials) {
+   var troopSelection = F2(function (address,credentials) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("medium-3 large-2 medium-pull-9 large-pull-10 columns troop-menu"),troopSelectionStyles]),
       _U.list([A2($Html.br,_U.list([]),_U.list([]))
               ,A2($Html.div,_U.list([]),_U.list([$Html.text("Select a Troop")]))
               ,A2($Html.hr,_U.list([]),_U.list([]))
-              ,troopMenu(credentials)]));
-   };
-   var view = function (credentials) {
-      return A2($Html.div,_U.list([$Html$Attributes.$class("expanded row")]),_U.list([content,troopSelection(credentials)]));
-   };
+              ,A2(troopMenu,address,credentials)]));
+   });
+   var view = F3(function (address,credentials,model) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class("expanded row")]),_U.list([content(model),A2(troopSelection,address,credentials)]));
+   });
    return _elm.PhotoAlbum.View.values = {_op: _op
                                         ,view: view
                                         ,troopSelection: troopSelection
@@ -11373,7 +11533,8 @@ Elm.PhotoAlbum.View.make = function (_elm) {
                                         ,troopMenu: troopMenu
                                         ,menuItem: menuItem
                                         ,thumbnails: thumbnails
-                                        ,thumbnail: thumbnail};
+                                        ,thumbnail: thumbnail
+                                        ,albumName: albumName};
 };
 Elm.Loading = Elm.Loading || {};
 Elm.Loading.View = Elm.Loading.View || {};
@@ -11420,7 +11581,7 @@ Elm.App.View.make = function (_elm) {
       switch (_p0.ctor)
       {case "LoadingPage": return $Loading$View.view;
          case "LoginPage": return A2($Login$View.view,A2($Signal.forwardTo,address,$App$Update.Authentication),model.loginInfo);
-         default: return $PhotoAlbum$View.view(model.loginInfo.credentials);}
+         default: return A3($PhotoAlbum$View.view,A2($Signal.forwardTo,address,$App$Update.PhotoAlbums),model.loginInfo.credentials,model.photoAlbum);}
    });
    return _elm.App.View.values = {_op: _op,view: view};
 };
