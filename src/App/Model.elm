@@ -1,17 +1,17 @@
 module App.Model where
 
 import Login.Model as Login
-import PhotoAlbum.Model as PhotoAlbum
+import PhotoAlbums.Model as PhotoAlbums
 
 type alias Model =
   { page : Page
   , loginInfo : Login.Model
-  , photoAlbum : PhotoAlbum.Model
+  , photoAlbum : PhotoAlbums.Model
   }
 
 type Page
   = LoginPage
-  | PhotoAlbumPage
+  | PhotoAlbumsPage
   | LoadingPage
 
 
@@ -19,5 +19,5 @@ initialModel : Model
 initialModel =
   { page = LoadingPage
   , loginInfo = Login.initialModel
-  , photoAlbum = PhotoAlbum.initialModel
+  , photoAlbum = PhotoAlbums.initialModel
   }

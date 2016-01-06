@@ -1,4 +1,4 @@
-module PhotoAlbum.Model where
+module PhotoAlbums.Model where
 
 import Credentials as C
 

@@ -1,4 +1,4 @@
-module PhotoAlbum.View where
+module PhotoAlbums.View where
 
 import Signal exposing (Address)
 
@@ -7,8 +7,8 @@ import Html.Attributes as A
 import Html.Events as E
 
 import Credentials as C
-import PhotoAlbum.Update as Update
-import PhotoAlbum.Model exposing (Model, PhotoAlbum)
+import PhotoAlbums.Update as Update
+import PhotoAlbums.Model exposing (Model, PhotoAlbum)
 
 
 view : Address Update.Action -> C.Credentials -> Model -> Html

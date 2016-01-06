@@ -1,4 +1,4 @@
-module PhotoAlbum.Update where
+module PhotoAlbums.Update where
 
 import Http exposing (Error(..))
 import Json.Decode as Json exposing ((:=))
@@ -7,7 +7,7 @@ import Credentials as C
 import Effects exposing (Effects)
 import Task exposing (Task)
 
-import PhotoAlbum.Model exposing (Model, PhotoAlbum, Photo)
+import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
 
 import Debug
 

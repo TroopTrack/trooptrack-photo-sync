@@ -7,7 +7,7 @@ import App.Model exposing (Model, Page(..))
 import App.Update exposing (Action(..))
 
 import Login.View as Login
-import PhotoAlbum.View as PhotoAlbum
+import PhotoAlbums.View as PhotoAlbums
 import Loading.View as Loading
 
 view : Address Action -> Model -> Html
@@ -22,8 +22,8 @@ view address model =
         (Signal.forwardTo address Authentication)
         model.loginInfo
 
-    PhotoAlbumPage ->
-      PhotoAlbum.view
+    PhotoAlbumsPage ->
+      PhotoAlbums.view
         (Signal.forwardTo address App.Update.PhotoAlbums)
         model.loginInfo.credentials
         model.photoAlbum

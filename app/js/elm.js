@@ -11027,13 +11027,13 @@ Elm.Login.Model.make = function (_elm) {
    var Model = F6(function (a,b,c,d,e,f) {    return {username: a,password: b,authenticating: c,credentials: d,errorMessage: e,successMessage: f};});
    return _elm.Login.Model.values = {_op: _op,Model: Model,initialModel: initialModel};
 };
-Elm.PhotoAlbum = Elm.PhotoAlbum || {};
-Elm.PhotoAlbum.Model = Elm.PhotoAlbum.Model || {};
-Elm.PhotoAlbum.Model.make = function (_elm) {
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.Model = Elm.PhotoAlbums.Model || {};
+Elm.PhotoAlbums.Model.make = function (_elm) {
    "use strict";
-   _elm.PhotoAlbum = _elm.PhotoAlbum || {};
-   _elm.PhotoAlbum.Model = _elm.PhotoAlbum.Model || {};
-   if (_elm.PhotoAlbum.Model.values) return _elm.PhotoAlbum.Model.values;
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.Model = _elm.PhotoAlbums.Model || {};
+   if (_elm.PhotoAlbums.Model.values) return _elm.PhotoAlbums.Model.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Credentials = Elm.Credentials.make(_elm),
@@ -11047,7 +11047,7 @@ Elm.PhotoAlbum.Model.make = function (_elm) {
    var Photo = F2(function (a,b) {    return {photoUrl: a,photoId: b};});
    var PhotoAlbum = F5(function (a,b,c,d,e) {    return {name: a,takenOn: b,photoCount: c,photoAlbumId: d,photos: e};});
    var Model = F3(function (a,b,c) {    return {photoAlbums: a,errorMessage: b,user: c};});
-   return _elm.PhotoAlbum.Model.values = {_op: _op,Model: Model,PhotoAlbum: PhotoAlbum,Photo: Photo,initialModel: initialModel};
+   return _elm.PhotoAlbums.Model.values = {_op: _op,Model: Model,PhotoAlbum: PhotoAlbum,Photo: Photo,initialModel: initialModel};
 };
 Elm.App = Elm.App || {};
 Elm.App.Model = Elm.App.Model || {};
@@ -11062,19 +11062,19 @@ Elm.App.Model.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Login$Model = Elm.Login.Model.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
-   $PhotoAlbum$Model = Elm.PhotoAlbum.Model.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var LoadingPage = {ctor: "LoadingPage"};
-   var initialModel = {page: LoadingPage,loginInfo: $Login$Model.initialModel,photoAlbum: $PhotoAlbum$Model.initialModel};
-   var PhotoAlbumPage = {ctor: "PhotoAlbumPage"};
+   var initialModel = {page: LoadingPage,loginInfo: $Login$Model.initialModel,photoAlbum: $PhotoAlbums$Model.initialModel};
+   var PhotoAlbumsPage = {ctor: "PhotoAlbumsPage"};
    var LoginPage = {ctor: "LoginPage"};
    var Model = F3(function (a,b,c) {    return {page: a,loginInfo: b,photoAlbum: c};});
    return _elm.App.Model.values = {_op: _op
                                   ,Model: Model
                                   ,LoginPage: LoginPage
-                                  ,PhotoAlbumPage: PhotoAlbumPage
+                                  ,PhotoAlbumsPage: PhotoAlbumsPage
                                   ,LoadingPage: LoadingPage
                                   ,initialModel: initialModel};
 };
@@ -11172,13 +11172,13 @@ Elm.Login.Update.make = function (_elm) {
                                      ,userDecoder: userDecoder
                                      ,storeUsersBox: storeUsersBox};
 };
-Elm.PhotoAlbum = Elm.PhotoAlbum || {};
-Elm.PhotoAlbum.Update = Elm.PhotoAlbum.Update || {};
-Elm.PhotoAlbum.Update.make = function (_elm) {
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.Update = Elm.PhotoAlbums.Update || {};
+Elm.PhotoAlbums.Update.make = function (_elm) {
    "use strict";
-   _elm.PhotoAlbum = _elm.PhotoAlbum || {};
-   _elm.PhotoAlbum.Update = _elm.PhotoAlbum.Update || {};
-   if (_elm.PhotoAlbum.Update.values) return _elm.PhotoAlbum.Update.values;
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.Update = _elm.PhotoAlbums.Update || {};
+   if (_elm.PhotoAlbums.Update.values) return _elm.PhotoAlbums.Update.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Credentials = Elm.Credentials.make(_elm),
@@ -11188,7 +11188,7 @@ Elm.PhotoAlbum.Update.make = function (_elm) {
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
-   $PhotoAlbum$Model = Elm.PhotoAlbum.Model.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
@@ -11204,11 +11204,11 @@ Elm.PhotoAlbum.Update.make = function (_elm) {
            A2($Basics._op["++"],$Basics.toString(_p0._0),A2($Basics._op["++"]," --  ",_p0._1)));}
    };
    var photoDecoder = A3($Json$Decode.object2,
-   $PhotoAlbum$Model.Photo,
+   $PhotoAlbums$Model.Photo,
    A2($Json$Decode._op[":="],"photo",$Json$Decode.string),
    A2($Json$Decode._op[":="],"troop_photo_id",$Json$Decode.$int));
    var photoAlbumDecoder = A6($Json$Decode.object5,
-   $PhotoAlbum$Model.PhotoAlbum,
+   $PhotoAlbums$Model.PhotoAlbum,
    A2($Json$Decode._op[":="],"name",$Json$Decode.string),
    A2($Json$Decode._op[":="],"taken_on",$Json$Decode.string),
    A2($Json$Decode._op[":="],"photo_count",$Json$Decode.$int),
@@ -11273,20 +11273,20 @@ Elm.PhotoAlbum.Update.make = function (_elm) {
               }}
    });
    var LoadPhotoAlbums = function (a) {    return {ctor: "LoadPhotoAlbums",_0: a};};
-   return _elm.PhotoAlbum.Update.values = {_op: _op
-                                          ,LoadPhotoAlbums: LoadPhotoAlbums
-                                          ,DisplayPhotoAlbums: DisplayPhotoAlbums
-                                          ,UpdatePhotoAlbum: UpdatePhotoAlbum
-                                          ,NoOp: NoOp
-                                          ,update: update
-                                          ,loadPhotoAlbums: loadPhotoAlbums
-                                          ,sendPhotoAlbumsRequest: sendPhotoAlbumsRequest
-                                          ,fetchAlbumDetails: fetchAlbumDetails
-                                          ,sendPhotoAlbumDetailsRequest: sendPhotoAlbumDetailsRequest
-                                          ,photoAlbumsDecoder: photoAlbumsDecoder
-                                          ,photoAlbumDecoder: photoAlbumDecoder
-                                          ,photoDecoder: photoDecoder
-                                          ,networkErrorMessage: networkErrorMessage};
+   return _elm.PhotoAlbums.Update.values = {_op: _op
+                                           ,LoadPhotoAlbums: LoadPhotoAlbums
+                                           ,DisplayPhotoAlbums: DisplayPhotoAlbums
+                                           ,UpdatePhotoAlbum: UpdatePhotoAlbum
+                                           ,NoOp: NoOp
+                                           ,update: update
+                                           ,loadPhotoAlbums: loadPhotoAlbums
+                                           ,sendPhotoAlbumsRequest: sendPhotoAlbumsRequest
+                                           ,fetchAlbumDetails: fetchAlbumDetails
+                                           ,sendPhotoAlbumDetailsRequest: sendPhotoAlbumDetailsRequest
+                                           ,photoAlbumsDecoder: photoAlbumsDecoder
+                                           ,photoAlbumDecoder: photoAlbumDecoder
+                                           ,photoDecoder: photoDecoder
+                                           ,networkErrorMessage: networkErrorMessage};
 };
 Elm.App = Elm.App || {};
 Elm.App.Update = Elm.App.Update || {};
@@ -11304,7 +11304,7 @@ Elm.App.Update.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
-   $PhotoAlbum$Update = Elm.PhotoAlbum.Update.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
@@ -11325,19 +11325,19 @@ Elm.App.Update.make = function (_elm) {
               } else {
                  var loginInfo = model.loginInfo;
                  var newLoginInfo = _U.update(loginInfo,{credentials: _p1._0});
-                 return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: newLoginInfo,page: $App$Model.PhotoAlbumPage}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: newLoginInfo,page: $App$Model.PhotoAlbumsPage}),_1: $Effects.none};
               }
          case "Authentication": var _p2 = A2($Login$Update.update,_p0._0,model.loginInfo);
            var login = _p2._0;
            var fx = _p2._1;
            var users = login.credentials.users;
-           var page = $List.isEmpty(users) ? model.page : $App$Model.PhotoAlbumPage;
+           var page = $List.isEmpty(users) ? model.page : $App$Model.PhotoAlbumsPage;
            return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: login,page: page}),_1: A2($Effects.map,Authentication,fx)};
          default: var credentials = model.loginInfo.credentials;
-           var _p3 = A3($PhotoAlbum$Update.update,_p0._0,credentials.partnerToken,model.photoAlbum);
-           var newPhotoAlbum = _p3._0;
+           var _p3 = A3($PhotoAlbums$Update.update,_p0._0,credentials.partnerToken,model.photoAlbum);
+           var newPhotoAlbums = _p3._0;
            var fx = _p3._1;
-           return {ctor: "_Tuple2",_0: _U.update(model,{photoAlbum: newPhotoAlbum}),_1: A2($Effects.map,PhotoAlbums,fx)};}
+           return {ctor: "_Tuple2",_0: _U.update(model,{photoAlbum: newPhotoAlbums}),_1: A2($Effects.map,PhotoAlbums,fx)};}
    });
    return _elm.App.Update.values = {_op: _op
                                    ,Authentication: Authentication
@@ -11466,13 +11466,13 @@ Elm.Login.View.make = function (_elm) {
                                    ,forgotPassword: forgotPassword
                                    ,toMessage: toMessage};
 };
-Elm.PhotoAlbum = Elm.PhotoAlbum || {};
-Elm.PhotoAlbum.View = Elm.PhotoAlbum.View || {};
-Elm.PhotoAlbum.View.make = function (_elm) {
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
+Elm.PhotoAlbums.View.make = function (_elm) {
    "use strict";
-   _elm.PhotoAlbum = _elm.PhotoAlbum || {};
-   _elm.PhotoAlbum.View = _elm.PhotoAlbum.View || {};
-   if (_elm.PhotoAlbum.View.values) return _elm.PhotoAlbum.View.values;
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
+   if (_elm.PhotoAlbums.View.values) return _elm.PhotoAlbums.View.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Credentials = Elm.Credentials.make(_elm),
@@ -11482,8 +11482,8 @@ Elm.PhotoAlbum.View.make = function (_elm) {
    $Html$Events = Elm.Html.Events.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
-   $PhotoAlbum$Model = Elm.PhotoAlbum.Model.make(_elm),
-   $PhotoAlbum$Update = Elm.PhotoAlbum.Update.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
@@ -11502,7 +11502,7 @@ Elm.PhotoAlbum.View.make = function (_elm) {
       return A2($Html.li,
       _U.list([]),
       _U.list([A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbum$Update.LoadPhotoAlbums(user))]),
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.LoadPhotoAlbums(user))]),
       _U.list([$Html.text(user.troop)]))]));
    });
    var troopMenu = F2(function (address,credentials) {
@@ -11525,16 +11525,16 @@ Elm.PhotoAlbum.View.make = function (_elm) {
    var view = F3(function (address,credentials,model) {
       return A2($Html.div,_U.list([$Html$Attributes.$class("expanded row")]),_U.list([content(model),A2(troopSelection,address,credentials)]));
    });
-   return _elm.PhotoAlbum.View.values = {_op: _op
-                                        ,view: view
-                                        ,troopSelection: troopSelection
-                                        ,troopSelectionStyles: troopSelectionStyles
-                                        ,content: content
-                                        ,troopMenu: troopMenu
-                                        ,menuItem: menuItem
-                                        ,thumbnails: thumbnails
-                                        ,thumbnail: thumbnail
-                                        ,albumName: albumName};
+   return _elm.PhotoAlbums.View.values = {_op: _op
+                                         ,view: view
+                                         ,troopSelection: troopSelection
+                                         ,troopSelectionStyles: troopSelectionStyles
+                                         ,content: content
+                                         ,troopMenu: troopMenu
+                                         ,menuItem: menuItem
+                                         ,thumbnails: thumbnails
+                                         ,thumbnail: thumbnail
+                                         ,albumName: albumName};
 };
 Elm.Loading = Elm.Loading || {};
 Elm.Loading.View = Elm.Loading.View || {};
@@ -11572,7 +11572,7 @@ Elm.App.View.make = function (_elm) {
    $Loading$View = Elm.Loading.View.make(_elm),
    $Login$View = Elm.Login.View.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
-   $PhotoAlbum$View = Elm.PhotoAlbum.View.make(_elm),
+   $PhotoAlbums$View = Elm.PhotoAlbums.View.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
@@ -11581,7 +11581,7 @@ Elm.App.View.make = function (_elm) {
       switch (_p0.ctor)
       {case "LoadingPage": return $Loading$View.view;
          case "LoginPage": return A2($Login$View.view,A2($Signal.forwardTo,address,$App$Update.Authentication),model.loginInfo);
-         default: return A3($PhotoAlbum$View.view,A2($Signal.forwardTo,address,$App$Update.PhotoAlbums),model.loginInfo.credentials,model.photoAlbum);}
+         default: return A3($PhotoAlbums$View.view,A2($Signal.forwardTo,address,$App$Update.PhotoAlbums),model.loginInfo.credentials,model.photoAlbum);}
    });
    return _elm.App.View.values = {_op: _op,view: view};
 };

@@ -5,13 +5,13 @@ import Effects exposing (Effects)
 import App.Model exposing (Model, Page(..), initialModel)
 
 import Login.Update as Login
-import PhotoAlbum.Update
+import PhotoAlbums.Update
 import Credentials as C
 
 
 type Action
   = Authentication Login.Action
-  | PhotoAlbums PhotoAlbum.Update.Action
+  | PhotoAlbums PhotoAlbums.Update.Action
   | NoOp
   | CurrentUser (Maybe C.Credentials)
 
@@ -45,7 +45,7 @@ update action model =
             newLoginInfo =
               { loginInfo | credentials = creds }
           in
-            ( { model | loginInfo = newLoginInfo, page = PhotoAlbumPage }
+            ( { model | loginInfo = newLoginInfo, page = PhotoAlbumsPage }
             , Effects.none
             )
 
@@ -61,7 +61,7 @@ update action model =
           if List.isEmpty users then
             model.page
           else
-            PhotoAlbumPage
+            PhotoAlbumsPage
 
       in
         ( { model | loginInfo = login, page = page }
@@ -73,10 +73,11 @@ update action model =
         credentials =
           model.loginInfo.credentials
 
-        (newPhotoAlbum, fx) =
-          PhotoAlbum.Update.update photoAlbumAct credentials.partnerToken model.photoAlbum
+        (newPhotoAlbums, fx) =
+          PhotoAlbums.Update.update photoAlbumAct credentials.partnerToken model.photoAlbum
+
       in
-        ( { model | photoAlbum = newPhotoAlbum }
+        ( { model | photoAlbum = newPhotoAlbums }
         , Effects.map PhotoAlbums fx
         )
 
