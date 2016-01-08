@@ -9,12 +9,13 @@ import Task exposing (Task)
 
 import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
 
-import Debug
 
 type Action
   = LoadPhotoAlbums C.User
   | DisplayPhotoAlbums (Result Error (List PhotoAlbum))
   | UpdatePhotoAlbum (Result Error PhotoAlbum)
+  | CurrentAlbum (Maybe PhotoAlbum)
+  | DownloadPhoto Photo
   | NoOp
 
 update : Action -> String -> Model -> (Model, Effects Action)
@@ -24,9 +25,15 @@ update action partnerToken model =
     NoOp ->
       (model, Effects.none)
 
+    CurrentAlbum album ->
+      ( { model | currentAlbum = album }
+      , Effects.none
+      )
+
     LoadPhotoAlbums user ->
-      ( { model | user = Just user }
-      , loadPhotoAlbums partnerToken user)
+      ( { model | user = Just user, currentAlbum = Nothing }
+      , loadPhotoAlbums partnerToken user
+      )
 
     DisplayPhotoAlbums result ->
       case result of
@@ -61,6 +68,10 @@ update action partnerToken model =
           , Effects.none
           )
 
+    DownloadPhoto photo ->
+      ( model
+      , Effects.none
+      )
 
 loadPhotoAlbums : String -> C.User -> Effects Action
 loadPhotoAlbums partnerToken user =

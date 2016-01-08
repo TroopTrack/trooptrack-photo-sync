@@ -74,10 +74,10 @@ update action model =
           model.loginInfo.credentials
 
         (newPhotoAlbums, fx) =
-          PhotoAlbums.Update.update photoAlbumAct credentials.partnerToken model.photoAlbum
+          PhotoAlbums.Update.update photoAlbumAct credentials.partnerToken model.photoAlbums
 
       in
-        ( { model | photoAlbum = newPhotoAlbums }
+        ( { model | photoAlbums = newPhotoAlbums }
         , Effects.map PhotoAlbums fx
         )
 

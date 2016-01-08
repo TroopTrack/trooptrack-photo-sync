@@ -6,7 +6,7 @@ import PhotoAlbums.Model as PhotoAlbums
 type alias Model =
   { page : Page
   , loginInfo : Login.Model
-  , photoAlbum : PhotoAlbums.Model
+  , photoAlbums : PhotoAlbums.Model
   }
 
 type Page
@@ -19,5 +19,5 @@ initialModel : Model
 initialModel =
   { page = LoadingPage
   , loginInfo = Login.initialModel
-  , photoAlbum = PhotoAlbums.initialModel
+  , photoAlbums = PhotoAlbums.initialModel
   }

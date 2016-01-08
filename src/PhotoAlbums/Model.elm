@@ -6,6 +6,7 @@ type alias Model =
   { photoAlbums : List PhotoAlbum
   , errorMessage : Maybe String
   , user : Maybe C.User
+  , currentAlbum : Maybe PhotoAlbum
   }
 
 type alias PhotoAlbum =
@@ -26,4 +27,5 @@ initialModel =
   { photoAlbums = []
   , errorMessage = Nothing
   , user = Nothing
+  , currentAlbum = Nothing
   }

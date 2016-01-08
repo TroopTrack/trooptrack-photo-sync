@@ -1,4 +1,5 @@
-'use strict';
+/*jslint node: true, esnext: true */
+"use strict";
 
 const electron = require('electron');
 const app = electron.app;  // Module to control application life.

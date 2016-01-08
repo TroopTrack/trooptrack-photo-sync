@@ -3,7 +3,7 @@ module.exports.connectTo = function connectTo(elmThing) {
 
   elmThing.ports.storeUsersSignal.subscribe(storeCurrentUser);
   elmThing.ports.getCurrentUserSignal.subscribe(getCurrentUser(elmThing));
-}
+};
 
 
 var userDb = new PouchDB("dbs/photo_sync_users", {adapter: 'websql'});
@@ -19,14 +19,14 @@ function storeCurrentUser(credentials) {
     if (err.status === 404) {
       userDb.put(credentials, 'current_user').then(function(response) {
         return console.log("First login!", response);
-      })
+      });
     }
     else {
       // TODO: send errors back into Elm App.
       console.error(err);
     }
   });
-};
+}
 
 
 function getCurrentUser(elmThing) {
@@ -37,6 +37,6 @@ function getCurrentUser(elmThing) {
       console.log("No current user", error);
 
       return elmThing.ports.setCurrentUser.send(null);
-    })
-  }
+    });
+  };
 }
