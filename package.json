@@ -17,5 +17,9 @@
     "watch": "^0.17.1"
   },
   "dependencies": {
+    "mkdirp": "^0.5.1",
+    "request": "^2.67.0",
+    "request-progress": "^1.0.2",
+    "user-home": "^2.0.0"
   }
 }

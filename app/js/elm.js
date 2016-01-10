@@ -11403,16 +11403,18 @@ Elm.PhotoAlbums.Model.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialModel = {photoAlbums: _U.list([]),errorMessage: $Maybe.Nothing,user: $Maybe.Nothing,currentAlbum: $Maybe.Nothing};
-   var Photo = F2(function (a,b) {    return {photoUrl: a,photoId: b};});
+   var emptyPhoto = {photoUrl: "",photoId: 0,path: _U.list([])};
+   var initialModel = {photoAlbums: _U.list([]),errorMessage: $Maybe.Nothing,user: $Maybe.Nothing,currentAlbum: $Maybe.Nothing,photoDownloads: $Dict.empty};
+   var Photo = F3(function (a,b,c) {    return {photoUrl: a,photoId: b,path: c};});
    var PhotoAlbum = F5(function (a,b,c,d,e) {    return {name: a,takenOn: b,photoCount: c,photoAlbumId: d,photos: e};});
-   var Model = F4(function (a,b,c,d) {    return {photoAlbums: a,errorMessage: b,user: c,currentAlbum: d};});
-   return _elm.PhotoAlbums.Model.values = {_op: _op,Model: Model,PhotoAlbum: PhotoAlbum,Photo: Photo,initialModel: initialModel};
+   var Model = F5(function (a,b,c,d,e) {    return {photoAlbums: a,errorMessage: b,user: c,currentAlbum: d,photoDownloads: e};});
+   return _elm.PhotoAlbums.Model.values = {_op: _op,Model: Model,PhotoAlbum: PhotoAlbum,Photo: Photo,initialModel: initialModel,emptyPhoto: emptyPhoto};
 };
 Elm.App = Elm.App || {};
 Elm.App.Model = Elm.App.Model || {};
@@ -11548,7 +11550,9 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
    $Effects = Elm.Effects.make(_elm),
+   $Erl = Elm.Erl.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
@@ -11568,10 +11572,17 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
            "Error communicating with the server: ",
            A2($Basics._op["++"],$Basics.toString(_p0._0),A2($Basics._op["++"]," --  ",_p0._1)));}
    };
-   var photoDecoder = A3($Json$Decode.object2,
+   var albumDownloader = $Signal.mailbox(_U.list([]));
+   var photoDownloader = $Signal.mailbox($PhotoAlbums$Model.emptyPhoto);
+   var photoPathDecoder = function () {
+      var parseUrl = function (url) {    return $Result.Ok(function (_) {    return _.path;}($Erl.parse(url)));};
+      return A2($Json$Decode.customDecoder,A2($Json$Decode._op[":="],"photo",$Json$Decode.string),parseUrl);
+   }();
+   var photoDecoder = A4($Json$Decode.object3,
    $PhotoAlbums$Model.Photo,
    A2($Json$Decode._op[":="],"photo",$Json$Decode.string),
-   A2($Json$Decode._op[":="],"troop_photo_id",$Json$Decode.$int));
+   A2($Json$Decode._op[":="],"troop_photo_id",$Json$Decode.$int),
+   photoPathDecoder);
    var photoAlbumDecoder = A6($Json$Decode.object5,
    $PhotoAlbums$Model.PhotoAlbum,
    A2($Json$Decode._op[":="],"name",$Json$Decode.string),
@@ -11601,6 +11612,17 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       ,body: $Http.empty}));
    });
    var NoOp = {ctor: "NoOp"};
+   var downloadAlbum = function (album) {
+      return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,albumDownloader.address,album.photos)));
+   };
+   var downloadPhoto = function (photo) {    return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,photoDownloader.address,photo)));};
+   var CancelDownload = function (a) {    return {ctor: "CancelDownload",_0: a};};
+   var DownloadComplete = function (a) {    return {ctor: "DownloadComplete",_0: a};};
+   var completeDownload = function (photo) {
+      return $Effects.task(A2($Task.andThen,$Task.sleep(2000),$Basics.always($Task.succeed(DownloadComplete(photo)))));
+   };
+   var DownloadProgress = function (a) {    return {ctor: "DownloadProgress",_0: a};};
+   var DownloadAlbum = function (a) {    return {ctor: "DownloadAlbum",_0: a};};
    var DownloadPhoto = function (a) {    return {ctor: "DownloadPhoto",_0: a};};
    var CurrentAlbum = function (a) {    return {ctor: "CurrentAlbum",_0: a};};
    var UpdatePhotoAlbum = function (a) {    return {ctor: "UpdatePhotoAlbum",_0: a};};
@@ -11639,7 +11661,24 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
               } else {
                  return {ctor: "_Tuple2",_0: _U.update(model,{errorMessage: $Maybe.Just(networkErrorMessage(_p6._0))}),_1: $Effects.none};
               }
-         default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+         case "DownloadPhoto": var _p7 = _p2._0;
+           var downloads = A3($Dict.insert,_p7.photoId,0.0,model.photoDownloads);
+           return {ctor: "_Tuple2",_0: _U.update(model,{photoDownloads: downloads}),_1: downloadPhoto(_p7)};
+         case "DownloadAlbum": var _p8 = _p2._0;
+           var downloads = A3($Basics.flip,
+           $Dict.union,
+           model.photoDownloads,
+           $Dict.fromList(A2($List.map,function (p) {    return {ctor: "_Tuple2",_0: p.photoId,_1: 0.0};},_p8.photos)));
+           return {ctor: "_Tuple2",_0: _U.update(model,{photoDownloads: downloads}),_1: downloadAlbum(_p8)};
+         case "DownloadProgress": var _p10 = _p2._0._1;
+           var _p9 = _p2._0._0;
+           var fx = _U.eq(_p9,100.0) ? completeDownload(_p10) : $Effects.none;
+           var downloads = A3($Dict.insert,_p10.photoId,_p9,model.photoDownloads);
+           return {ctor: "_Tuple2",_0: _U.update(model,{photoDownloads: downloads}),_1: fx};
+         case "DownloadComplete": var downloads = A2($Dict.remove,_p2._0.photoId,model.photoDownloads);
+           return {ctor: "_Tuple2",_0: _U.update(model,{photoDownloads: downloads}),_1: $Effects.none};
+         default: var downloads = A2($Dict.remove,_p2._0.photoId,model.photoDownloads);
+           return {ctor: "_Tuple2",_0: _U.update(model,{photoDownloads: downloads}),_1: $Effects.none};}
    });
    var LoadPhotoAlbums = function (a) {    return {ctor: "LoadPhotoAlbums",_0: a};};
    return _elm.PhotoAlbums.Update.values = {_op: _op
@@ -11648,15 +11687,25 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
                                            ,UpdatePhotoAlbum: UpdatePhotoAlbum
                                            ,CurrentAlbum: CurrentAlbum
                                            ,DownloadPhoto: DownloadPhoto
+                                           ,DownloadAlbum: DownloadAlbum
+                                           ,DownloadProgress: DownloadProgress
+                                           ,DownloadComplete: DownloadComplete
+                                           ,CancelDownload: CancelDownload
                                            ,NoOp: NoOp
                                            ,update: update
                                            ,loadPhotoAlbums: loadPhotoAlbums
                                            ,sendPhotoAlbumsRequest: sendPhotoAlbumsRequest
                                            ,fetchAlbumDetails: fetchAlbumDetails
                                            ,sendPhotoAlbumDetailsRequest: sendPhotoAlbumDetailsRequest
+                                           ,downloadAlbum: downloadAlbum
+                                           ,downloadPhoto: downloadPhoto
+                                           ,completeDownload: completeDownload
                                            ,photoAlbumsDecoder: photoAlbumsDecoder
                                            ,photoAlbumDecoder: photoAlbumDecoder
                                            ,photoDecoder: photoDecoder
+                                           ,photoPathDecoder: photoPathDecoder
+                                           ,photoDownloader: photoDownloader
+                                           ,albumDownloader: albumDownloader
                                            ,networkErrorMessage: networkErrorMessage};
 };
 Elm.App = Elm.App || {};
@@ -11848,7 +11897,7 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
-   $Erl = Elm.Erl.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
@@ -11857,8 +11906,21 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
    var _op = {};
+   var downloadAllButton = F3(function (address,album,model) {
+      var theButton = A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadAlbum(album))]),
+      _U.list([$Html.text("Download All")]));
+      var isDownloading = function (photo) {    return A2($Dict.member,photo.photoId,model.photoDownloads);};
+      var activeDownloads = A2($List.filter,isDownloading,album.photos);
+      var theMessage = $Html.text($String.concat(_U.list(["Downloading "
+                                                         ,$Basics.toString($List.length(activeDownloads))
+                                                         ," of "
+                                                         ,$Basics.toString($List.length(album.photos))])));
+      return _U.cmp($List.length(activeDownloads),0) > 0 ? theMessage : theButton;
+   });
    var albumName = function (album) {    return A2($Basics._op["++"],album.name,A2($Basics._op["++"]," (",A2($Basics._op["++"],album.takenOn,")")));};
    var albumMenuItem = F3(function (address,currentAlbum,renderedAlbum) {
       return A2($Html.li,
@@ -11895,28 +11957,33 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    var albumThumbnails = F2(function (address,model) {
       return A2($Html.div,_U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),A2($List.map,albumThumbnail(address),model.photoAlbums));
    });
-   var photoThumbnail = F2(function (address,photo) {
-      var photoName = A2($Maybe.withDefault,"[ No Name ]",$List.head($List.reverse(function (_) {    return _.path;}($Erl.parse(photo.photoUrl)))));
+   var photoThumbnail = F3(function (address,model,photo) {
+      var maybeDownload = A2($Dict.get,photo.photoId,model.photoDownloads);
+      var downloadButton = function () {
+         var _p0 = maybeDownload;
+         if (_p0.ctor === "Nothing") {
+               return A2($Html.a,
+               _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadPhoto(photo))]),
+               _U.list([$Html.text("Download")]));
+            } else {
+               return A2($Html.progress,_U.list([$Html$Attributes.max("1"),$Html$Attributes.value($Basics.toString(_p0._0))]),_U.list([]));
+            }
+      }();
+      var photoName = A2($Maybe.withDefault,"{ Unnamed }",$List.head($List.reverse(photo.path)));
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("column")]),
       _U.list([A2($Html.h6,_U.list([nowrapText]),_U.list([$Html.text(photoName)]))
               ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photo.photoUrl),$Html$Attributes.title(photoName)]),_U.list([]))
-              ,A2($Html.div,
-              _U.list([]),
-              _U.list([A2($Html.h6,
-              _U.list([nowrapText]),
-              _U.list([$Html.text("[ ")
-                      ,A2($Html.a,
-                      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadPhoto(photo))]),
-                      _U.list([$Html.text("Download")]))
-                      ,$Html.text(" ]")]))]))]));
+              ,A2($Html.div,_U.list([]),_U.list([A2($Html.h6,_U.list([nowrapText]),_U.list([$Html.text("[ "),downloadButton,$Html.text(" ]")]))]))]));
    });
-   var photoThumbnails = F2(function (address,album) {
-      return A2($Html.div,_U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),A2($List.map,photoThumbnail(address),album.photos));
+   var photoThumbnails = F3(function (address,album,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),
+      A2($List.map,A2(photoThumbnail,address,model),album.photos));
    });
    var content = F2(function (address,model) {
-      var _p0 = model.currentAlbum;
-      if (_p0.ctor === "Nothing") {
+      var _p1 = model.currentAlbum;
+      if (_p1.ctor === "Nothing") {
             var troopName = A2($Maybe.withDefault,"",A2($Maybe.map,function (_) {    return _.troop;},model.user));
             return A2($Html.div,
             _U.list([$Html$Attributes.$class("medium-9 large-10 medium-push-3 large-push-2 columns")]),
@@ -11924,9 +11991,15 @@ Elm.PhotoAlbums.View.make = function (_elm) {
                     ,A2($Html.br,_U.list([]),_U.list([]))
                     ,A2(albumThumbnails,address,model)]));
          } else {
+            var _p2 = _p1._0;
             return A2($Html.div,
             _U.list([$Html$Attributes.$class("medium-9 large-10 medium-push-3 large-push-2 columns")]),
-            _U.list([A2($Html.br,_U.list([]),_U.list([])),A2(photoThumbnails,address,_p0._0)]));
+            _U.list([A2($Html.h1,_U.list([$Html$Attributes.$class("text-center")]),_U.list([$Html.text(_p2.name)]))
+                    ,A2($Html.h5,
+                    _U.list([$Html$Attributes.$class("text-center"),nowrapText]),
+                    _U.list([$Html.text("[ "),A3(downloadAllButton,address,_p2,model),$Html.text(" ]")]))
+                    ,A2($Html.br,_U.list([]),_U.list([]))
+                    ,A3(photoThumbnails,address,_p2,model)]));
          }
    });
    var leftSideStyles = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "background",_1: "#f7f7f7"}]));
@@ -11967,6 +12040,7 @@ Elm.PhotoAlbums.View.make = function (_elm) {
                                          ,albumThumbnails: albumThumbnails
                                          ,albumThumbnail: albumThumbnail
                                          ,albumName: albumName
+                                         ,downloadAllButton: downloadAllButton
                                          ,photoThumbnails: photoThumbnails
                                          ,photoThumbnail: photoThumbnail};
 };
@@ -12032,14 +12106,57 @@ Elm.App.make = function (_elm) {
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
    $List = Elm.List.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var cancelledDownload = Elm.Native.Port.make(_elm).inboundSignal("cancelledDownload",
+   "PhotoAlbums.Model.Photo",
+   function (v) {
+      return typeof v === "object" && "photoUrl" in v && "photoId" in v && "path" in v ? {_: {}
+                                                                                         ,photoUrl: typeof v.photoUrl === "string" || typeof v.photoUrl === "object" && v.photoUrl instanceof String ? v.photoUrl : _U.badPort("a string",
+                                                                                         v.photoUrl)
+                                                                                         ,photoId: typeof v.photoId === "number" && isFinite(v.photoId) && Math.floor(v.photoId) === v.photoId ? v.photoId : _U.badPort("an integer",
+                                                                                         v.photoId)
+                                                                                         ,path: typeof v.path === "object" && v.path instanceof Array ? Elm.Native.List.make(_elm).fromArray(v.path.map(function (v) {
+                                                                                            return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+                                                                                            v);
+                                                                                         })) : _U.badPort("an array",
+                                                                                         v.path)} : _U.badPort("an object with fields `photoUrl`, `photoId`, `path`",
+      v);
+   });
+   var cancelDownload = function () {
+      var cancels = A2($Signal.map,$PhotoAlbums$Update.CancelDownload,cancelledDownload);
+      return A2($Signal.map,$App$Update.PhotoAlbums,cancels);
+   }();
+   var downloadProgress = Elm.Native.Port.make(_elm).inboundSignal("downloadProgress",
+   "( Float, PhotoAlbums.Model.Photo\n)",
+   function (v) {
+      return typeof v === "object" && v instanceof Array ? {ctor: "_Tuple2"
+                                                           ,_0: typeof v[0] === "number" ? v[0] : _U.badPort("a number",v[0])
+                                                           ,_1: typeof v[1] === "object" && "photoUrl" in v[1] && "photoId" in v[1] && "path" in v[1] ? {_: {}
+                                                                                                                                                        ,photoUrl: typeof v[1].photoUrl === "string" || typeof v[1].photoUrl === "object" && v[1].photoUrl instanceof String ? v[1].photoUrl : _U.badPort("a string",
+                                                                                                                                                        v[1].photoUrl)
+                                                                                                                                                        ,photoId: typeof v[1].photoId === "number" && isFinite(v[1].photoId) && Math.floor(v[1].photoId) === v[1].photoId ? v[1].photoId : _U.badPort("an integer",
+                                                                                                                                                        v[1].photoId)
+                                                                                                                                                        ,path: typeof v[1].path === "object" && v[1].path instanceof Array ? Elm.Native.List.make(_elm).fromArray(v[1].path.map(function (v) {
+                                                                                                                                                           return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+                                                                                                                                                           v);
+                                                                                                                                                        })) : _U.badPort("an array",
+                                                                                                                                                        v[1].path)} : _U.badPort("an object with fields `photoUrl`, `photoId`, `path`",
+                                                           v[1])} : _U.badPort("an array",v);
+   });
+   var updateDownloadProgress = function () {
+      var progress = A2($Signal.map,$PhotoAlbums$Update.DownloadProgress,downloadProgress);
+      return A2($Signal.map,$App$Update.PhotoAlbums,progress);
+   }();
    var setCurrentUser = Elm.Native.Port.make(_elm).inboundSignal("setCurrentUser",
    "Maybe.Maybe\n    Credentials.Credentials",
    function (v) {
@@ -12073,6 +12190,18 @@ Elm.App.make = function (_elm) {
       v));
    });
    var setCurrentUserSignal = A2($Signal.map,$App$Update.CurrentUser,setCurrentUser);
+   var startAlbumDownload = Elm.Native.Port.make(_elm).outboundSignal("startAlbumDownload",
+   function (v) {
+      return Elm.Native.List.make(_elm).toArray(v).map(function (v) {
+         return {photoUrl: v.photoUrl,photoId: v.photoId,path: Elm.Native.List.make(_elm).toArray(v.path).map(function (v) {    return v;})};
+      });
+   },
+   $PhotoAlbums$Update.albumDownloader.signal);
+   var startPhotoDownload = Elm.Native.Port.make(_elm).outboundSignal("startPhotoDownload",
+   function (v) {
+      return {photoUrl: v.photoUrl,photoId: v.photoId,path: Elm.Native.List.make(_elm).toArray(v.path).map(function (v) {    return v;})};
+   },
+   $PhotoAlbums$Update.photoDownloader.signal);
    var getCurrentUserSignal = Elm.Native.Port.make(_elm).outboundSignal("getCurrentUserSignal",
    function (v) {
       return [];
@@ -12093,8 +12222,16 @@ Elm.App.make = function (_elm) {
              })};
    },
    $Login$Update.storeUsersBox.signal);
-   var app = $StartApp.start({init: $App$Update.init,update: $App$Update.update,view: $App$View.view,inputs: _U.list([setCurrentUserSignal])});
+   var app = $StartApp.start({init: $App$Update.init
+                             ,update: $App$Update.update
+                             ,view: $App$View.view
+                             ,inputs: _U.list([setCurrentUserSignal,updateDownloadProgress,cancelDownload])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
-   return _elm.App.values = {_op: _op,app: app,main: main,setCurrentUserSignal: setCurrentUserSignal};
+   return _elm.App.values = {_op: _op
+                            ,app: app
+                            ,main: main
+                            ,setCurrentUserSignal: setCurrentUserSignal
+                            ,updateDownloadProgress: updateDownloadProgress
+                            ,cancelDownload: cancelDownload};
 };

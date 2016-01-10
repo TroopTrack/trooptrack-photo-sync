@@ -19,12 +19,23 @@
   <script src="js/pouchdb.min.js"></script>
   <script src="js/storage.js"></script>
   <script type="application/javascript">
+    var nullPhoto = {
+      photoUrl : "",
+      photoId : 0,
+      path : []
+    };
+
     var app = Elm.fullscreen(Elm.App, {
-      setCurrentUser: null
+      setCurrentUser: null,
+      downloadProgress: [0.0, nullPhoto],
+      cancelledDownload: nullPhoto
     });
 
     var storage = require('./js/storage.js');
     storage.connectTo(app);
+
+    var downloads = require('./js/downloads.js');
+    downloads(app);
   </script>
 </body>
 

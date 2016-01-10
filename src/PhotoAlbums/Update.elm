@@ -9,6 +9,9 @@ import Task exposing (Task)
 
 import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
 
+import Erl
+import Dict
+
 
 type Action
   = LoadPhotoAlbums C.User
@@ -16,6 +19,10 @@ type Action
   | UpdatePhotoAlbum (Result Error PhotoAlbum)
   | CurrentAlbum (Maybe PhotoAlbum)
   | DownloadPhoto Photo
+  | DownloadAlbum PhotoAlbum
+  | DownloadProgress (Float, Photo)
+  | DownloadComplete Photo
+  | CancelDownload Photo
   | NoOp
 
 update : Action -> String -> Model -> (Model, Effects Action)
@@ -38,8 +45,9 @@ update action partnerToken model =
     DisplayPhotoAlbums result ->
       case result of
         Ok albums ->
-          ( { model | photoAlbums = albums
-                    , errorMessage = Nothing
+          ( { model
+            | photoAlbums = albums
+            , errorMessage = Nothing
             }
           , Effects.batch
               <| List.map (fetchAlbumDetails partnerToken model.user) albums
@@ -69,9 +77,64 @@ update action partnerToken model =
           )
 
     DownloadPhoto photo ->
-      ( model
-      , Effects.none
-      )
+      let
+        downloads =
+          Dict.insert photo.photoId 0.0 model.photoDownloads
+      in
+        ( { model | photoDownloads = downloads }
+        , downloadPhoto photo
+        )
+
+    DownloadAlbum album ->
+      let
+        downloads =
+          List.map (\p -> (p.photoId, 0.0)) album.photos
+            |> Dict.fromList
+            |> (flip Dict.union) model.photoDownloads
+      in
+        ( { model | photoDownloads = downloads }
+        , downloadAlbum album
+        )
+
+    DownloadProgress (percentage, photo) ->
+      let
+        downloads =
+          Dict.insert photo.photoId percentage model.photoDownloads
+
+        fx =
+          if percentage == 100.0
+            then completeDownload photo
+            else Effects.none
+      in
+        ( { model | photoDownloads = downloads }
+        , fx
+        )
+
+    DownloadComplete photo ->
+      let
+        downloads =
+          Dict.remove photo.photoId model.photoDownloads
+
+      in
+        ( { model | photoDownloads = downloads }
+        , Effects.none
+        )
+
+
+    CancelDownload photo ->
+      let
+        downloads =
+          Dict.remove photo.photoId model.photoDownloads
+      in
+        ( { model | photoDownloads = downloads }
+        , Effects.none
+        )
+
+
+{-
+Side effects
+-}
+
 
 loadPhotoAlbums : String -> C.User -> Effects Action
 loadPhotoAlbums partnerToken user =
@@ -98,6 +161,7 @@ sendPhotoAlbumsRequest partnerToken user =
 fetchAlbumDetails : String -> Maybe C.User -> PhotoAlbum -> Effects Action
 fetchAlbumDetails partnerToken user album =
   case user of
+
     Nothing ->
       Task.succeed ()
         |> Task.map (always NoOp)
@@ -123,7 +187,32 @@ sendPhotoAlbumDetailsRequest partnerToken user album =
         , body = Http.empty
         }
 
--- Decoders
+
+downloadAlbum : PhotoAlbum -> Effects Action
+downloadAlbum album =
+  Signal.send albumDownloader.address album.photos
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
+
+downloadPhoto : Photo -> Effects Action
+downloadPhoto photo =
+  Signal.send photoDownloader.address photo
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
+
+completeDownload : Photo -> Effects Action
+completeDownload photo =
+  Task.sleep 2000 `Task.andThen`
+    always (Task.succeed (DownloadComplete photo))
+    |> Effects.task
+
+
+{-
+Decoders
+-}
+
 
 photoAlbumsDecoder : Json.Decoder (List PhotoAlbum)
 photoAlbumsDecoder =
@@ -146,11 +235,45 @@ photoAlbumDecoder =
 
 photoDecoder : Json.Decoder Photo
 photoDecoder =
-  Json.object2 Photo
+  Json.object3 Photo
     ("photo" := Json.string)
     ("troop_photo_id" := Json.int)
+    (photoPathDecoder)
 
--- Utility
+
+{-
+Parse the photo url and extracts the path segments into a field.
+-}
+photoPathDecoder : Json.Decoder (List String)
+photoPathDecoder =
+  let
+    parseUrl url =
+      Erl.parse url
+        |> .path
+        |> Ok
+  in
+    Json.customDecoder ("photo" := Json.string) parseUrl
+
+
+{-
+Mailboxes
+-}
+
+
+photoDownloader : Signal.Mailbox Photo
+photoDownloader =
+  Signal.mailbox PhotoAlbums.Model.emptyPhoto
+
+
+albumDownloader : Signal.Mailbox (List Photo)
+albumDownloader =
+  Signal.mailbox []
+
+
+{-
+Utility
+-}
+
 
 networkErrorMessage : Http.Error -> String
 networkErrorMessage err =

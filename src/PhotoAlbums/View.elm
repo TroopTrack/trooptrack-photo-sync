@@ -1,5 +1,8 @@
 module PhotoAlbums.View where
 
+import String
+import Dict
+
 import Signal exposing (Address)
 
 import Html as H exposing (Html, Attribute)
@@ -9,8 +12,6 @@ import Html.Events as E
 import Credentials as C
 import PhotoAlbums.Update as Update
 import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
-
-import Erl
 
 
 view : Address Update.Action -> C.Credentials -> Model -> Html
@@ -123,8 +124,8 @@ content address model =
         H.div
           [ A.class "medium-9 large-10 medium-push-3 large-push-2 columns" ]
           [ H.h1
-              [ A.class "text-center" ]
-              [ H.text troopName ]
+            [ A.class "text-center" ]
+            [ H.text troopName ]
           , H.br [] []
           , albumThumbnails address model
           ]
@@ -132,8 +133,19 @@ content address model =
     Just anAlbum ->
       H.div
         [ A.class "medium-9 large-10 medium-push-3 large-push-2 columns" ]
-        [ H.br [] []
-        , photoThumbnails address anAlbum
+        [ H.h1
+          [ A.class "text-center" ]
+          [ H.text anAlbum.name ]
+        , H.h5
+          [ A.class "text-center"
+          , nowrapText
+          ]
+          [ H.text "[ "
+          , downloadAllButton address anAlbum model
+          , H.text " ]"
+          ]
+        , H.br [] []
+        , photoThumbnails address anAlbum model
         ]
 
 
@@ -175,22 +187,74 @@ albumName album =
   album.name ++ " (" ++ album.takenOn ++ ")"
 
 
-photoThumbnails : Address Update.Action -> PhotoAlbum -> Html
-photoThumbnails address album =
+downloadAllButton : Address Update.Action -> PhotoAlbum -> Model -> Html
+downloadAllButton address album model =
+  let
+    isDownloading photo =
+      Dict.member photo.photoId model.photoDownloads
+
+    activeDownloads =
+      List.filter isDownloading album.photos
+
+    theButton =
+      H.a
+        [ A.href "#"
+        , E.onClick address <| Update.DownloadAlbum album
+        ]
+        [ H.text "Download All"
+        ]
+
+    theMessage =
+      String.concat
+        [ "Downloading "
+        , toString <| List.length activeDownloads
+        , " of "
+        , toString <| List.length album.photos
+        ]
+        |> H.text
+  in
+    if List.length activeDownloads > 0
+      then theMessage
+      else theButton
+
+
+
+photoThumbnails : Address Update.Action -> PhotoAlbum -> Model -> Html
+photoThumbnails address album model =
   H.div
     [ A.class "row small-up-2 medium-up-3 large-up-4" ]
-    <| List.map (photoThumbnail address) album.photos
+    <| List.map (photoThumbnail address model) album.photos
 
 
-photoThumbnail : Address Update.Action -> Photo -> Html
-photoThumbnail address photo =
+photoThumbnail : Address Update.Action -> Model -> Photo -> Html
+photoThumbnail address model photo =
   let
     photoName =
-      Erl.parse photo.photoUrl
-        |> .path
+      photo.path
         |> List.reverse
         |> List.head
-        |> Maybe.withDefault "[ No Name ]"
+        |> Maybe.withDefault "{ Unnamed }"
+
+    maybeDownload =
+      Dict.get photo.photoId model.photoDownloads
+
+    downloadButton =
+      case maybeDownload of
+
+        Nothing ->
+          H.a
+            [ A.href "#"
+            , E.onClick address (Update.DownloadPhoto photo)
+            ]
+            [ H.text "Download" ]
+
+        Just percentage ->
+          H.progress
+            [ A.max "1"
+            , A.value <| toString percentage
+            ]
+            []
+
   in
     H.div
       [ A.class "column" ]
@@ -208,12 +272,8 @@ photoThumbnail address photo =
         [ H.h6
           [ nowrapText ]
           [ H.text "[ "
-          , H.a
-            [ A.href "#"
-            , E.onClick address (Update.DownloadPhoto photo)
-            ]
-            [ H.text "Download" ]
-          , H.text" ]"
+          , downloadButton
+          , H.text " ]"
           ]
         ]
       ]
