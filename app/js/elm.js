@@ -11948,14 +11948,14 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    var albumThumbnail = F2(function (address,album) {
       var photoUrl = A2($Maybe.withDefault,"http://placehold.it/550x550",A2($Maybe.map,function (_) {    return _.photoUrl;},$List.head(album.photos)));
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("column")]),
+      _U.list([$Html$Attributes.$class("gallery-item")]),
       _U.list([A2($Html.a,
       _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)))]),
       _U.list([A2($Html.h5,_U.list([nowrapText]),_U.list([$Html.text(albumName(album))]))
               ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photoUrl)]),_U.list([]))]))]));
    });
    var albumThumbnails = F2(function (address,model) {
-      return A2($Html.div,_U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),A2($List.map,albumThumbnail(address),model.photoAlbums));
+      return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,albumThumbnail(address),model.photoAlbums));
    });
    var photoThumbnail = F3(function (address,model,photo) {
       var maybeDownload = A2($Dict.get,photo.photoId,model.photoDownloads);
@@ -11971,29 +11971,27 @@ Elm.PhotoAlbums.View.make = function (_elm) {
       }();
       var photoName = A2($Maybe.withDefault,"{ Unnamed }",$List.head($List.reverse(photo.path)));
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("column")]),
+      _U.list([$Html$Attributes.$class("gallery-item")]),
       _U.list([A2($Html.h6,_U.list([nowrapText]),_U.list([$Html.text(photoName)]))
               ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photo.photoUrl),$Html$Attributes.title(photoName)]),_U.list([]))
               ,A2($Html.div,_U.list([]),_U.list([A2($Html.h6,_U.list([nowrapText]),_U.list([$Html.text("[ "),downloadButton,$Html.text(" ]")]))]))]));
    });
    var photoThumbnails = F3(function (address,album,model) {
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("row small-up-2 medium-up-3 large-up-4")]),
-      A2($List.map,A2(photoThumbnail,address,model),album.photos));
+      return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,A2(photoThumbnail,address,model),album.photos));
    });
    var content = F2(function (address,model) {
       var _p1 = model.currentAlbum;
       if (_p1.ctor === "Nothing") {
             var troopName = A2($Maybe.withDefault,"",A2($Maybe.map,function (_) {    return _.troop;},model.user));
             return A2($Html.div,
-            _U.list([$Html$Attributes.$class("medium-9 large-10 medium-push-3 large-push-2 columns")]),
+            _U.list([$Html$Attributes.id("gallery")]),
             _U.list([A2($Html.h1,_U.list([$Html$Attributes.$class("text-center")]),_U.list([$Html.text(troopName)]))
                     ,A2($Html.br,_U.list([]),_U.list([]))
                     ,A2(albumThumbnails,address,model)]));
          } else {
             var _p2 = _p1._0;
             return A2($Html.div,
-            _U.list([$Html$Attributes.$class("medium-9 large-10 medium-push-3 large-push-2 columns")]),
+            _U.list([$Html$Attributes.id("gallery")]),
             _U.list([A2($Html.h1,_U.list([$Html$Attributes.$class("text-center")]),_U.list([$Html.text(_p2.name)]))
                     ,A2($Html.h5,
                     _U.list([$Html$Attributes.$class("text-center"),nowrapText]),
@@ -12002,7 +12000,6 @@ Elm.PhotoAlbums.View.make = function (_elm) {
                     ,A3(photoThumbnails,address,_p2,model)]));
          }
    });
-   var leftSideStyles = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "background",_1: "#f7f7f7"}]));
    var albumSelection = F2(function (address,model) {
       return $List.isEmpty(model.photoAlbums) ? A2($Html.div,_U.list([]),_U.list([])) : A2($Html.div,
       _U.list([]),
@@ -12019,18 +12016,17 @@ Elm.PhotoAlbums.View.make = function (_elm) {
               ,A2($Html.hr,_U.list([]),_U.list([]))
               ,A2(troopMenu,address,credentials)]));
    });
-   var leftSide = $Html.div(_U.list([$Html$Attributes.$class("medium-3 large-2 medium-pull-9 large-pull-10 columns troop-menu"),leftSideStyles]));
+   var leftSide = $Html.div(_U.list([$Html$Attributes.id("leftnav")]));
    var view = F3(function (address,credentials,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("expanded row")]),
-      _U.list([A2(content,address,model),leftSide(_U.list([A2(troopSelection,address,credentials),A2(albumSelection,address,model)]))]));
+      _U.list([$Html$Attributes.$class("content")]),
+      _U.list([leftSide(_U.list([A2(troopSelection,address,credentials),A2(albumSelection,address,model)])),A2(content,address,model)]));
    });
    return _elm.PhotoAlbums.View.values = {_op: _op
                                          ,view: view
                                          ,leftSide: leftSide
                                          ,troopSelection: troopSelection
                                          ,albumSelection: albumSelection
-                                         ,leftSideStyles: leftSideStyles
                                          ,nowrapText: nowrapText
                                          ,troopMenu: troopMenu
                                          ,troopMenuItem: troopMenuItem

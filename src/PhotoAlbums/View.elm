@@ -17,20 +17,19 @@ import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
 view : Address Update.Action -> C.Credentials -> Model -> Html
 view address credentials model =
  H.div
-  [ A.class "expanded row" ]
-  [ content address model
-  , leftSide
+  [ A.class "content" ]
+  [ leftSide
     [ troopSelection address credentials
     , albumSelection address model
     ]
+  , content address model
   ]
 
 
 leftSide : List Html -> Html
 leftSide =
   H.div
-    [ A.class "medium-3 large-2 medium-pull-9 large-pull-10 columns troop-menu"
-    , leftSideStyles
+    [ A.id "leftnav"
     ]
 
 
@@ -57,12 +56,6 @@ albumSelection address model =
         , H.hr [] []
         , albumMenu address model
         ]
-
-
-leftSideStyles : Attribute
-leftSideStyles =
-  A.style
-    [ ( "background", "#f7f7f7" ) ]
 
 
 nowrapText : Attribute
@@ -122,7 +115,7 @@ content address model =
           |> Maybe.withDefault ""
       in
         H.div
-          [ A.class "medium-9 large-10 medium-push-3 large-push-2 columns" ]
+          [ A.id "gallery" ]
           [ H.h1
             [ A.class "text-center" ]
             [ H.text troopName ]
@@ -132,7 +125,7 @@ content address model =
 
     Just anAlbum ->
       H.div
-        [ A.class "medium-9 large-10 medium-push-3 large-push-2 columns" ]
+        [ A.id "gallery" ]
         [ H.h1
           [ A.class "text-center" ]
           [ H.text anAlbum.name ]
@@ -152,7 +145,7 @@ content address model =
 albumThumbnails : Address Update.Action -> Model -> Html
 albumThumbnails address model =
   H.div
-    [ A.class "row small-up-2 medium-up-3 large-up-4" ]
+    [ A.class "gallery-items"]
     <| List.map (albumThumbnail address) model.photoAlbums
 
 
@@ -165,7 +158,7 @@ albumThumbnail address album =
         |> Maybe.withDefault "http://placehold.it/550x550"
   in
     H.div
-      [ A.class "column" ]
+      [ A.class "gallery-item" ]
       [ H.a
         [ A.href "#"
         , E.onClick address <| Update.CurrentAlbum (Just album)
@@ -222,7 +215,7 @@ downloadAllButton address album model =
 photoThumbnails : Address Update.Action -> PhotoAlbum -> Model -> Html
 photoThumbnails address album model =
   H.div
-    [ A.class "row small-up-2 medium-up-3 large-up-4" ]
+    [ A.class "gallery-items" ]
     <| List.map (photoThumbnail address model) album.photos
 
 
@@ -257,7 +250,7 @@ photoThumbnail address model photo =
 
   in
     H.div
-      [ A.class "column" ]
+      [ A.class "gallery-item" ]
       [ H.h6
         [ nowrapText ]
         [ H.text photoName ]

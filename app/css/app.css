@@ -1,5 +1,41 @@
-.log-in-form {
-  border: 1px solid #cacaca;
-  padding: 1rem;
-  border-radius: 3px;
+/* Pallette: http://colorschemedesigner.com/csd-3.5/#0041T00u-w0w0 */
+
+body {
+  background: url(../img/content-bg.png) left repeat-y #FFFFFF;
 }
+
+
+a {
+  text-decoration: none;
+  color: #A17550;
+}
+
+
+#leftnav {
+  width: 175px;
+  float: left;
+  padding: 0 0 0 15px;
+  }
+  #leftnav ul {
+    padding-left: 0;
+    list-style: inside;
+    list-style-type: none;
+  }
+
+
+#gallery {
+  margin-left: 200px;
+  }
+  .gallery-items {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+  }
+  .gallery-item {
+    max-width: 200px;
+    padding: 0 10px;
+  }
+  .thumbnail {
+    max-width: 100%;
+    height: auto;
+  }
