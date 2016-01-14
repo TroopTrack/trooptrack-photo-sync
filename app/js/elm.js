@@ -11786,18 +11786,12 @@ Elm.Layouts.make = function (_elm) {
    var _op = {};
    var centered = function (content) {
       return A2($Html.div,
-      _U.list([]),
+      _U.list([$Html$Attributes.id("login-page")]),
       _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("callout large primary")]),
-              _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("row column text-center")]),
-              _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Trooptrack")]))
-                      ,A2($Html.h2,_U.list([$Html$Attributes.$class("subheader")]),_U.list([$Html.text("Photo Album Manager")]))]))]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("row medium-8 large-7 columns")]),
-              _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("medium-6 medium-centered large-4 large-centered columns")]),content)]))]))]));
+      _U.list([$Html$Attributes.id("login-container")]),
+      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Trooptrack")]))
+              ,A2($Html.h2,_U.list([$Html$Attributes.$class("subheader")]),_U.list([$Html.text("Photo Album Manager")]))
+              ,content]))]));
    };
    return _elm.Layouts.values = {_op: _op,centered: centered};
 };
@@ -11851,16 +11845,15 @@ Elm.Login.View.make = function (_elm) {
    var errorMessage = function (model) {
       var _p2 = model.errorMessage;
       if (_p2.ctor === "Nothing") {
-            return A2($Html.div,_U.list([$Html$Attributes.$class("text-center")]),_U.list([]));
+            return A2($Html.div,_U.list([]),_U.list([]));
          } else {
-            return A2($Html.div,_U.list([$Html$Attributes.$class("text-center alert callout")]),_U.list([$Html.text(_p2._0)]));
+            return A2($Html.div,_U.list([]),_U.list([$Html.text(_p2._0)]));
          }
    };
    var viewContent = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("row column log-in-form")]),
-      _U.list([A2($Html.h4,_U.list([$Html$Attributes.$class("text-center")]),_U.list([$Html.text("Log in with your user name")]))
-              ,errorMessage(model)
+      _U.list([]),
+      _U.list([errorMessage(model)
               ,successMessage(model)
               ,A2(field,
               "Username",
@@ -11875,7 +11868,7 @@ Elm.Login.View.make = function (_elm) {
               ,A2(submitButton,address,model)
               ,forgotPassword]));
    });
-   var view = F2(function (address,model) {    return $Layouts.centered(_U.list([A2(viewContent,address,model)]));});
+   var view = F2(function (address,model) {    return $Layouts.centered(A2(viewContent,address,model));});
    return _elm.Login.View.values = {_op: _op
                                    ,view: view
                                    ,viewContent: viewContent

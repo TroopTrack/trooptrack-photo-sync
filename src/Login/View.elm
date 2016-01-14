@@ -14,14 +14,14 @@ import Login.Model exposing (Model)
 
 view : Address Action -> Model -> Html
 view address model =
-  Layouts.centered [ viewContent address model ]
+  Layouts.centered <| viewContent address model
 
 
 viewContent : Address Action -> Model -> Html
 viewContent address model =
-  H.div [ A.class "row column log-in-form" ]
-    [ H.h4 [ A.class "text-center" ] [ H.text "Log in with your user name" ]
-    , errorMessage model
+  H.div
+    []
+    [ errorMessage model
     , successMessage model
     , field "Username"
         [ A.type' "text"
@@ -42,10 +42,10 @@ errorMessage : Model -> Html
 errorMessage model =
   case model.errorMessage of
     Nothing ->
-      H.div [ A.class "text-center" ] []
+      H.div [] []
 
     Just msg ->
-      H.div [ A.class "text-center alert callout" ] [ H.text msg ]
+      H.div [] [ H.text msg ]
 
 
 successMessage : Model -> Html
