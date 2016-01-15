@@ -7,6 +7,7 @@ import App.Model exposing (Model, Page(..), initialModel)
 import Login.Update as Login
 import PhotoAlbums.Update
 import Credentials as C
+import Notifications
 
 
 type Action
@@ -15,6 +16,7 @@ type Action
   | NoOp
   | CurrentUser (Maybe C.Credentials)
   | ResetSession
+  | Notify Notifications.Notification
 
 
 init : (Model, Effects Action)
@@ -30,6 +32,11 @@ update action model =
 
     NoOp ->
       (model, Effects.none)
+
+    Notify notification ->
+      ( model
+      , sendNotification notification
+      )
 
     ResetSession ->
       ( initialModel
@@ -95,6 +102,16 @@ getCurrentUser =
   Signal.send getCurrentUserBox.address ()
     |> Effects.task
     |> Effects.map (always NoOp)
+
+
+sendNotification : Notifications.Notification -> Effects Action
+sendNotification notification =
+  let
+    notifier = Notifications.notifications
+  in
+    Signal.send notifier.address notification
+      |> Effects.task
+      |> Effects.map (always NoOp)
 
 -- Mailboxes
 

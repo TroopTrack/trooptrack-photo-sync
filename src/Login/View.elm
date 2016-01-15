@@ -21,9 +21,7 @@ viewContent : Address Action -> Model -> Html
 viewContent address model =
   H.div
     []
-    [ errorMessage model
-    , successMessage model
-    , field "Username"
+    [ field "Username"
         [ A.type' "text"
         , on "input" targetValue (toMessage address Username)
         , A.value model.username

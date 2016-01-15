@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TroopTrack Photo Albums</title>
   <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/toastr.css">
   <link rel="stylesheet" href="css/app.css"
 </head>
 
@@ -27,7 +28,8 @@
       setCurrentUser: null,
       downloadProgress: [0.0, nullPhoto],
       cancelledDownload: nullPhoto,
-      sessionEnded: []
+      sessionEnded: [],
+      errorNotifications: ""
     });
 
     var storage = require('./js/storage.js');
@@ -35,6 +37,9 @@
 
     var downloads = require('./js/downloads.js');
     downloads(app);
+
+    var notifications = require('./js/notifications.js');
+    notifications(app);
   </script>
 </body>
 

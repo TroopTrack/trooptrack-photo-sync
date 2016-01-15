@@ -13,6 +13,7 @@ import Credentials as C
 import Login.Update exposing (storeUsersBox)
 import PhotoAlbums.Update exposing (photoDownloader, albumDownloader)
 import PhotoAlbums.Model
+import Notifications
 
 
 app : StartApp.App Model
@@ -26,6 +27,7 @@ app =
       , updateDownloadProgress
       , cancelDownload
       , resetSessionSignal
+      , Signal.map App.Update.Notify externalNotifications
       ]
     }
 
@@ -73,6 +75,14 @@ port startAlbumDownload =
   albumDownloader.signal
 
 
+port notifications : Signal Notifications.Notification
+port notifications =
+  let
+    notifier = Notifications.notifications
+  in
+    notifier.signal
+
+
 {-
 Ports -- Incoming
 -}
@@ -116,3 +126,10 @@ cancelDownload =
       Signal.map PhotoAlbums.Update.CancelDownload cancelledDownload
   in
     Signal.map App.Update.PhotoAlbums cancels
+
+
+port errorNotifications : Signal String
+
+externalNotifications : Signal Notifications.Notification
+externalNotifications =
+  Signal.map Notifications.error errorNotifications

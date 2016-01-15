@@ -14,34 +14,45 @@ var userDb = new PouchDB("dbs/photo_sync_users", {adapter: 'websql'});
 
 function storeCurrentUser(credentials) {
   userDb.get('current_user').then(function(doc) {
+
     return userDb.put(credentials, 'current_user', doc._rev);
+
   }).then(function(response) {
+
     // TODO: send results back into Elm App.
     console.log(response);
+
   }).catch(function(err) {
+
     if (err.status === 404) {
+
       userDb.put(credentials, 'current_user').then(function(response) {
         return console.log("First login!", response);
       });
-    }
-    else {
+
+    } else {
+
       // TODO: send errors back into Elm App.
       console.error(err);
+
     }
+
   });
 }
 
 
 function getCurrentUser(elmThing) {
   return function getCurrentUserImpl() {
-    console.log("Getting current user!");
-    userDb.get("current_user").then(function(doc) {
-      console.log("Found user!", doc);
-      return elmThing.ports.setCurrentUser.send(doc);
-    }).catch(function(error) {
-      console.log("No current user", error);
 
+    userDb.get("current_user").then(function(doc) {
+
+      return elmThing.ports.setCurrentUser.send(doc);
+
+    }).catch(function(error) {
+
+      console.log("No current user", error);
       return elmThing.ports.setCurrentUser.send(null);
+
     });
   };
 }

@@ -83,7 +83,31 @@ module.exports = function downloads(elmThing) {
 
   function writePhoto(filePath, photo) {
     progress(request(photo.photoUrl))
-    .on('progress', function (state) {
+    .on('response', function(response) {
+
+      if (response.statusCode === 404) {
+
+        console.log("no file!!!");
+        elmThing.ports.errorNotifications.send(
+          "File not available. " +
+          "Failed to write: " + filePath
+        );
+        return false;
+
+      } else {
+
+        return true;
+
+      }
+
+    }).on('error', function (err) {
+
+      // TODO: Send an error notification through elm
+      console.error("We should send this into Elm:", err);
+      elmThing.ports.errorNotifications(err.message);
+      return false;
+
+    }).on('progress', function (state) {
 
       // The state is an object that looks like this:
       // {
@@ -100,14 +124,12 @@ module.exports = function downloads(elmThing) {
       // }
 
       elmThing.ports.downloadProgress.send([state.percentage, photo]);
-    })
-    .on('error', function (err) {
-      console.error("We should send this into Elm:", err);
-    })
-    .on('end', function(err) {
+
+    }).on('end', function(err) {
+
       elmThing.ports.downloadProgress.send([100.0, photo]);
-    })
-    .pipe(fs.createWriteStream(filePath));
+
+    }).pipe(fs.createWriteStream(filePath));
   }
 
 

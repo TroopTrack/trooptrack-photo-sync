@@ -11445,6 +11445,25 @@ Elm.App.Model.make = function (_elm) {
                                   ,LoadingPage: LoadingPage
                                   ,initialModel: initialModel};
 };
+Elm.Notifications = Elm.Notifications || {};
+Elm.Notifications.make = function (_elm) {
+   "use strict";
+   _elm.Notifications = _elm.Notifications || {};
+   if (_elm.Notifications.values) return _elm.Notifications.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var Notification = F2(function (a,b) {    return {msgType: a,message: b};});
+   var empty = A2(Notification,"","");
+   var notifications = $Signal.mailbox(empty);
+   var error = Notification("error");
+   return _elm.Notifications.values = {_op: _op,Notification: Notification,empty: empty,error: error,notifications: notifications};
+};
 Elm.Login = Elm.Login || {};
 Elm.Login.Update = Elm.Login.Update || {};
 Elm.Login.Update.make = function (_elm) {
@@ -11462,6 +11481,7 @@ Elm.Login.Update.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Login$Model = Elm.Login.Model.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Notifications = Elm.Notifications.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
@@ -11496,6 +11516,10 @@ Elm.Login.Update.make = function (_elm) {
    var storeCurrentUser = function (credentials) {
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,storeUsersBox.address,credentials)));
    };
+   var errorNotification = function (message) {
+      var notifications = $Notifications.notifications;
+      return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,notifications.address,$Notifications.error(message))));
+   };
    var UserToken = function (a) {    return {ctor: "UserToken",_0: a};};
    var authenticate = function (model) {    return $Effects.task(A2($Task.map,UserToken,$Task.toResult(sendAuthRequest(model))));};
    var update = F2(function (action,model) {
@@ -11517,7 +11541,7 @@ Elm.Login.Update.make = function (_elm) {
                  return {ctor: "_Tuple2"
                         ,_0: _U.update(model,
                         {errorMessage: $Maybe.Just("oops! couldn\'t authenticate"),successMessage: $Maybe.Nothing,password: "",authenticating: false})
-                        ,_1: $Effects.none};
+                        ,_1: errorNotification("oops! couldn\'t authenticate")};
               }}
    });
    var Authenticate = {ctor: "Authenticate"};
@@ -11534,6 +11558,7 @@ Elm.Login.Update.make = function (_elm) {
                                      ,authenticate: authenticate
                                      ,sendAuthRequest: sendAuthRequest
                                      ,storeCurrentUser: storeCurrentUser
+                                     ,errorNotification: errorNotification
                                      ,authDecoder: authDecoder
                                      ,userListDecoder: userListDecoder
                                      ,userDecoder: userDecoder
@@ -11731,22 +11756,29 @@ Elm.App.Update.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Notifications = Elm.Notifications.make(_elm),
    $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var getCurrentUserBox = $Signal.mailbox({ctor: "_Tuple0"});
+   var Notify = function (a) {    return {ctor: "Notify",_0: a};};
    var ResetSession = {ctor: "ResetSession"};
    var CurrentUser = function (a) {    return {ctor: "CurrentUser",_0: a};};
    var NoOp = {ctor: "NoOp"};
    var getCurrentUser = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,getCurrentUserBox.address,{ctor: "_Tuple0"})));
    var init = {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
+   var sendNotification = function (notification) {
+      var notifier = $Notifications.notifications;
+      return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,notifier.address,notification)));
+   };
    var PhotoAlbums = function (a) {    return {ctor: "PhotoAlbums",_0: a};};
    var Authentication = function (a) {    return {ctor: "Authentication",_0: a};};
    var update = F2(function (action,model) {
       var _p0 = action;
       switch (_p0.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "Notify": return {ctor: "_Tuple2",_0: model,_1: sendNotification(_p0._0)};
          case "ResetSession": return {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
          case "CurrentUser": var _p1 = _p0._0;
            if (_p1.ctor === "Nothing") {
@@ -11774,9 +11806,11 @@ Elm.App.Update.make = function (_elm) {
                                    ,NoOp: NoOp
                                    ,CurrentUser: CurrentUser
                                    ,ResetSession: ResetSession
+                                   ,Notify: Notify
                                    ,init: init
                                    ,update: update
                                    ,getCurrentUser: getCurrentUser
+                                   ,sendNotification: sendNotification
                                    ,getCurrentUserBox: getCurrentUserBox};
 };
 Elm.Layouts = Elm.Layouts || {};
@@ -11863,9 +11897,7 @@ Elm.Login.View.make = function (_elm) {
    var viewContent = F2(function (address,model) {
       return A2($Html.div,
       _U.list([]),
-      _U.list([errorMessage(model)
-              ,successMessage(model)
-              ,A2(field,
+      _U.list([A2(field,
               "Username",
               _U.list([$Html$Attributes.type$("text")
                       ,A3($Html$Events.on,"input",$Html$Events.targetValue,A2(toMessage,address,$Login$Update.Username))
@@ -12126,6 +12158,7 @@ Elm.App.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Notifications = Elm.Notifications.make(_elm),
    $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
@@ -12133,6 +12166,12 @@ Elm.App.make = function (_elm) {
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var errorNotifications = Elm.Native.Port.make(_elm).inboundSignal("errorNotifications",
+   "String",
+   function (v) {
+      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",v);
+   });
+   var externalNotifications = A2($Signal.map,$Notifications.error,errorNotifications);
    var cancelledDownload = Elm.Native.Port.make(_elm).inboundSignal("cancelledDownload",
    "PhotoAlbums.Model.Photo",
    function (v) {
@@ -12212,6 +12251,14 @@ Elm.App.make = function (_elm) {
       v));
    });
    var setCurrentUserSignal = A2($Signal.map,$App$Update.CurrentUser,setCurrentUser);
+   var notifications = Elm.Native.Port.make(_elm).outboundSignal("notifications",
+   function (v) {
+      return {msgType: v.msgType,message: v.message};
+   },
+   function () {
+      var notifier = $Notifications.notifications;
+      return notifier.signal;
+   }());
    var startAlbumDownload = Elm.Native.Port.make(_elm).outboundSignal("startAlbumDownload",
    function (v) {
       return Elm.Native.List.make(_elm).toArray(v).map(function (v) {
@@ -12255,7 +12302,11 @@ Elm.App.make = function (_elm) {
    var app = $StartApp.start({init: $App$Update.init
                              ,update: $App$Update.update
                              ,view: $App$View.view
-                             ,inputs: _U.list([setCurrentUserSignal,updateDownloadProgress,cancelDownload,resetSessionSignal])});
+                             ,inputs: _U.list([setCurrentUserSignal
+                                              ,updateDownloadProgress
+                                              ,cancelDownload
+                                              ,resetSessionSignal
+                                              ,A2($Signal.map,$App$Update.Notify,externalNotifications)])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
    return _elm.App.values = {_op: _op
@@ -12264,5 +12315,6 @@ Elm.App.make = function (_elm) {
                             ,setCurrentUserSignal: setCurrentUserSignal
                             ,resetSessionSignal: resetSessionSignal
                             ,updateDownloadProgress: updateDownloadProgress
-                            ,cancelDownload: cancelDownload};
+                            ,cancelDownload: cancelDownload
+                            ,externalNotifications: externalNotifications};
 };

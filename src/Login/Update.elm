@@ -7,6 +7,7 @@ import Json.Decode exposing (Decoder, (:=), string, int, list, object8, at)
 
 import Login.Model as LM exposing (Model)
 import Credentials as C
+import Notifications
 
 type Action
   = Username String
@@ -72,7 +73,7 @@ update action model =
               , password = ""
               , authenticating = False
             }
-          , Effects.none
+          , errorNotification "oops! couldn't authenticate"
           )
 
 
@@ -106,6 +107,17 @@ storeCurrentUser credentials =
   Signal.send storeUsersBox.address credentials
     |> Effects.task
     |> Effects.map (always NoOp)
+
+
+errorNotification : String -> Effects Action
+errorNotification message =
+  let
+    notifications = Notifications.notifications
+  in
+    Notifications.error message
+      |> Signal.send notifications.address
+      |> Effects.task
+      |> Effects.map (always NoOp)
 
 -- Decoders
 
