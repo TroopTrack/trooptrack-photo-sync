@@ -19,7 +19,8 @@ view address credentials model =
  H.div
   [ A.class "content" ]
   [ leftSide
-    [ troopSelection address credentials
+    [ userMenu address credentials
+    , troopSelection address credentials
     , albumSelection address model
     ]
   , content address model
@@ -30,6 +31,35 @@ leftSide : List Html -> Html
 leftSide =
   H.div
     [ A.id "leftnav"
+    ]
+
+
+userMenu : Address Update.Action -> C.Credentials -> Html
+userMenu address credentials =
+  H.div
+    []
+    [ greeting credentials
+    , H.hr [] []
+    , H.ul
+      [ A.class "menu" ]
+      [ logoutButton address ]
+    ]
+
+
+greeting : C.Credentials -> Html
+greeting credentials =
+  H.text "Welcome!"
+
+
+logoutButton : Address Update.Action -> Html
+logoutButton address =
+  H.li
+    []
+    [ H.a
+      [ A.href "#"
+      , E.onClick address Update.Logout
+      ]
+      [ H.text "Logout" ]
     ]
 
 

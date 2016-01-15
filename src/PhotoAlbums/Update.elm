@@ -23,6 +23,7 @@ type Action
   | DownloadProgress (Float, Photo)
   | DownloadComplete Photo
   | CancelDownload Photo
+  | Logout
   | NoOp
 
 update : Action -> String -> Model -> (Model, Effects Action)
@@ -31,6 +32,9 @@ update action partnerToken model =
 
     NoOp ->
       (model, Effects.none)
+
+    Logout ->
+      ( model, logout )
 
     CurrentAlbum album ->
       ( { model | currentAlbum = album }
@@ -204,10 +208,16 @@ downloadPhoto photo =
 
 completeDownload : Photo -> Effects Action
 completeDownload photo =
-  Task.sleep 2000 `Task.andThen`
+  Task.sleep 1000 `Task.andThen`
     always (Task.succeed (DownloadComplete photo))
     |> Effects.task
 
+
+logout : Effects Action
+logout =
+  Signal.send endSession.address ()
+    |> Effects.task
+    |> Effects.map (always NoOp)
 
 {-
 Decoders
@@ -268,6 +278,11 @@ photoDownloader =
 albumDownloader : Signal.Mailbox (List Photo)
 albumDownloader =
   Signal.mailbox []
+
+
+endSession : Signal.Mailbox ()
+endSession =
+  Signal.mailbox ()
 
 
 {-

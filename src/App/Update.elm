@@ -14,6 +14,7 @@ type Action
   | PhotoAlbums PhotoAlbums.Update.Action
   | NoOp
   | CurrentUser (Maybe C.Credentials)
+  | ResetSession
 
 
 init : (Model, Effects Action)
@@ -29,6 +30,11 @@ update action model =
 
     NoOp ->
       (model, Effects.none)
+
+    ResetSession ->
+      ( initialModel
+      , getCurrentUser
+      )
 
     CurrentUser maybeCreds ->
       case maybeCreds of

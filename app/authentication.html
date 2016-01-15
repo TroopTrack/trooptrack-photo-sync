@@ -26,7 +26,8 @@
     var app = Elm.fullscreen(Elm.App, {
       setCurrentUser: null,
       downloadProgress: [0.0, nullPhoto],
-      cancelledDownload: nullPhoto
+      cancelledDownload: nullPhoto,
+      sessionEnded: []
     });
 
     var storage = require('./js/storage.js');

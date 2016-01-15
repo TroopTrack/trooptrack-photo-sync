@@ -1,8 +1,11 @@
 module.exports.connectTo = function connectTo(elmThing) {
+
   console.log("Connected to Elm!", elmThing);
 
   elmThing.ports.storeUsersSignal.subscribe(storeCurrentUser);
   elmThing.ports.getCurrentUserSignal.subscribe(getCurrentUser(elmThing));
+  elmThing.ports.endSession.subscribe(destroyCurrentUser(elmThing));
+
 };
 
 
@@ -31,12 +34,29 @@ function storeCurrentUser(credentials) {
 
 function getCurrentUser(elmThing) {
   return function getCurrentUserImpl() {
+    console.log("Getting current user!");
     userDb.get("current_user").then(function(doc) {
+      console.log("Found user!", doc);
       return elmThing.ports.setCurrentUser.send(doc);
     }).catch(function(error) {
       console.log("No current user", error);
 
       return elmThing.ports.setCurrentUser.send(null);
+    });
+  };
+}
+
+
+function destroyCurrentUser(elmThing) {
+  return function destroyCurrentUserImpl() {
+    console.log("Removing user!");
+
+    userDb.get("current_user").then(function(doc) {
+      userDb.remove(doc);
+    }).then(function() {
+      return elmThing.ports.sessionEnded.send([]);
+    }).catch(function(error) {
+      return console.log("Error logging out", error);
     });
   };
 }

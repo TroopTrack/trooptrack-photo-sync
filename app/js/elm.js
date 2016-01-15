@@ -11360,7 +11360,7 @@ Elm.Credentials.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialCredentials = {partnerToken: "8pOsq6XbBVtcV_0Uy49EHA",users: _U.list([])};
+   var initialCredentials = {partnerToken: "l3CrVXqaUxS0Gb-cNcEBuA",users: _U.list([])};
    var User = F8(function (a,b,c,d,e,f,g,h) {
       return {token: a,privileges: b,troop: c,troop_id: d,troop_number: e,troop_type: f,troop_type_id: g,user_id: h};
    });
@@ -11572,6 +11572,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
            "Error communicating with the server: ",
            A2($Basics._op["++"],$Basics.toString(_p0._0),A2($Basics._op["++"]," --  ",_p0._1)));}
    };
+   var endSession = $Signal.mailbox({ctor: "_Tuple0"});
    var albumDownloader = $Signal.mailbox(_U.list([]));
    var photoDownloader = $Signal.mailbox($PhotoAlbums$Model.emptyPhoto);
    var photoPathDecoder = function () {
@@ -11616,10 +11617,12 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,albumDownloader.address,album.photos)));
    };
    var downloadPhoto = function (photo) {    return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,photoDownloader.address,photo)));};
+   var logout = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,endSession.address,{ctor: "_Tuple0"})));
+   var Logout = {ctor: "Logout"};
    var CancelDownload = function (a) {    return {ctor: "CancelDownload",_0: a};};
    var DownloadComplete = function (a) {    return {ctor: "DownloadComplete",_0: a};};
    var completeDownload = function (photo) {
-      return $Effects.task(A2($Task.andThen,$Task.sleep(2000),$Basics.always($Task.succeed(DownloadComplete(photo)))));
+      return $Effects.task(A2($Task.andThen,$Task.sleep(1000),$Basics.always($Task.succeed(DownloadComplete(photo)))));
    };
    var DownloadProgress = function (a) {    return {ctor: "DownloadProgress",_0: a};};
    var DownloadAlbum = function (a) {    return {ctor: "DownloadAlbum",_0: a};};
@@ -11642,6 +11645,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       var _p2 = action;
       switch (_p2.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "Logout": return {ctor: "_Tuple2",_0: model,_1: logout};
          case "CurrentAlbum": return {ctor: "_Tuple2",_0: _U.update(model,{currentAlbum: _p2._0}),_1: $Effects.none};
          case "LoadPhotoAlbums": var _p3 = _p2._0;
            return {ctor: "_Tuple2",_0: _U.update(model,{user: $Maybe.Just(_p3),currentAlbum: $Maybe.Nothing}),_1: A2(loadPhotoAlbums,partnerToken,_p3)};
@@ -11691,6 +11695,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
                                            ,DownloadProgress: DownloadProgress
                                            ,DownloadComplete: DownloadComplete
                                            ,CancelDownload: CancelDownload
+                                           ,Logout: Logout
                                            ,NoOp: NoOp
                                            ,update: update
                                            ,loadPhotoAlbums: loadPhotoAlbums
@@ -11700,12 +11705,14 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
                                            ,downloadAlbum: downloadAlbum
                                            ,downloadPhoto: downloadPhoto
                                            ,completeDownload: completeDownload
+                                           ,logout: logout
                                            ,photoAlbumsDecoder: photoAlbumsDecoder
                                            ,photoAlbumDecoder: photoAlbumDecoder
                                            ,photoDecoder: photoDecoder
                                            ,photoPathDecoder: photoPathDecoder
                                            ,photoDownloader: photoDownloader
                                            ,albumDownloader: albumDownloader
+                                           ,endSession: endSession
                                            ,networkErrorMessage: networkErrorMessage};
 };
 Elm.App = Elm.App || {};
@@ -11729,6 +11736,7 @@ Elm.App.Update.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var getCurrentUserBox = $Signal.mailbox({ctor: "_Tuple0"});
+   var ResetSession = {ctor: "ResetSession"};
    var CurrentUser = function (a) {    return {ctor: "CurrentUser",_0: a};};
    var NoOp = {ctor: "NoOp"};
    var getCurrentUser = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,getCurrentUserBox.address,{ctor: "_Tuple0"})));
@@ -11739,6 +11747,7 @@ Elm.App.Update.make = function (_elm) {
       var _p0 = action;
       switch (_p0.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+         case "ResetSession": return {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
          case "CurrentUser": var _p1 = _p0._0;
            if (_p1.ctor === "Nothing") {
                  return {ctor: "_Tuple2",_0: _U.update(model,{page: $App$Model.LoginPage}),_1: $Effects.none};
@@ -11764,6 +11773,7 @@ Elm.App.Update.make = function (_elm) {
                                    ,PhotoAlbums: PhotoAlbums
                                    ,NoOp: NoOp
                                    ,CurrentUser: CurrentUser
+                                   ,ResetSession: ResetSession
                                    ,init: init
                                    ,update: update
                                    ,getCurrentUser: getCurrentUser
@@ -12009,15 +12019,32 @@ Elm.PhotoAlbums.View.make = function (_elm) {
               ,A2($Html.hr,_U.list([]),_U.list([]))
               ,A2(troopMenu,address,credentials)]));
    });
+   var logoutButton = function (address) {
+      return A2($Html.li,
+      _U.list([]),
+      _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.Logout)]),_U.list([$Html.text("Logout")]))]));
+   };
+   var greeting = function (credentials) {    return $Html.text("Welcome!");};
+   var userMenu = F2(function (address,credentials) {
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([greeting(credentials)
+              ,A2($Html.hr,_U.list([]),_U.list([]))
+              ,A2($Html.ul,_U.list([$Html$Attributes.$class("menu")]),_U.list([logoutButton(address)]))]));
+   });
    var leftSide = $Html.div(_U.list([$Html$Attributes.id("leftnav")]));
    var view = F3(function (address,credentials,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("content")]),
-      _U.list([leftSide(_U.list([A2(troopSelection,address,credentials),A2(albumSelection,address,model)])),A2(content,address,model)]));
+      _U.list([leftSide(_U.list([A2(userMenu,address,credentials),A2(troopSelection,address,credentials),A2(albumSelection,address,model)]))
+              ,A2(content,address,model)]));
    });
    return _elm.PhotoAlbums.View.values = {_op: _op
                                          ,view: view
                                          ,leftSide: leftSide
+                                         ,userMenu: userMenu
+                                         ,greeting: greeting
+                                         ,logoutButton: logoutButton
                                          ,troopSelection: troopSelection
                                          ,albumSelection: albumSelection
                                          ,nowrapText: nowrapText
@@ -12146,6 +12173,12 @@ Elm.App.make = function (_elm) {
       var progress = A2($Signal.map,$PhotoAlbums$Update.DownloadProgress,downloadProgress);
       return A2($Signal.map,$App$Update.PhotoAlbums,progress);
    }();
+   var sessionEnded = Elm.Native.Port.make(_elm).inboundSignal("sessionEnded",
+   "()",
+   function (v) {
+      return typeof v === "object" && v instanceof Array ? {ctor: "_Tuple0"} : _U.badPort("an array",v);
+   });
+   var resetSessionSignal = A2($Signal.map,$Basics.always($App$Update.ResetSession),sessionEnded);
    var setCurrentUser = Elm.Native.Port.make(_elm).inboundSignal("setCurrentUser",
    "Maybe.Maybe\n    Credentials.Credentials",
    function (v) {
@@ -12196,6 +12229,14 @@ Elm.App.make = function (_elm) {
       return [];
    },
    $App$Update.getCurrentUserBox.signal);
+   var endSession = Elm.Native.Port.make(_elm).outboundSignal("endSession",
+   function (v) {
+      return [];
+   },
+   function () {
+      var sessionEnder = $PhotoAlbums$Update.endSession;
+      return sessionEnder.signal;
+   }());
    var storeUsersSignal = Elm.Native.Port.make(_elm).outboundSignal("storeUsersSignal",
    function (v) {
       return {partnerToken: v.partnerToken
@@ -12214,13 +12255,14 @@ Elm.App.make = function (_elm) {
    var app = $StartApp.start({init: $App$Update.init
                              ,update: $App$Update.update
                              ,view: $App$View.view
-                             ,inputs: _U.list([setCurrentUserSignal,updateDownloadProgress,cancelDownload])});
+                             ,inputs: _U.list([setCurrentUserSignal,updateDownloadProgress,cancelDownload,resetSessionSignal])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
    return _elm.App.values = {_op: _op
                             ,app: app
                             ,main: main
                             ,setCurrentUserSignal: setCurrentUserSignal
+                            ,resetSessionSignal: resetSessionSignal
                             ,updateDownloadProgress: updateDownloadProgress
                             ,cancelDownload: cancelDownload};
 };

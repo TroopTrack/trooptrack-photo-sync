@@ -25,6 +25,7 @@ app =
       [ setCurrentUserSignal
       , updateDownloadProgress
       , cancelDownload
+      , resetSessionSignal
       ]
     }
 
@@ -47,6 +48,14 @@ port tasks =
 port storeUsersSignal : Signal C.Credentials
 port storeUsersSignal =
   storeUsersBox.signal
+
+
+port endSession : Signal ()
+port endSession =
+  let
+    sessionEnder = PhotoAlbums.Update.endSession
+  in
+    sessionEnder.signal
 
 
 port getCurrentUserSignal : Signal ()
@@ -77,7 +86,16 @@ setCurrentUserSignal =
   Signal.map App.Update.CurrentUser setCurrentUser
 
 
+port sessionEnded : Signal ()
+
+
+resetSessionSignal : Signal App.Update.Action
+resetSessionSignal =
+  Signal.map (always App.Update.ResetSession) sessionEnded
+
+
 port downloadProgress : Signal (Float, PhotoAlbums.Model.Photo)
+
 
 updateDownloadProgress : Signal App.Update.Action
 updateDownloadProgress =
@@ -89,6 +107,7 @@ updateDownloadProgress =
 
 
 port cancelledDownload : Signal PhotoAlbums.Model.Photo
+
 
 cancelDownload : Signal App.Update.Action
 cancelDownload =

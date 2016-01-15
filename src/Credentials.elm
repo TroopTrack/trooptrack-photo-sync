@@ -19,6 +19,6 @@ type alias User =
 
 initialCredentials : Credentials
 initialCredentials =
-  { partnerToken = "8pOsq6XbBVtcV_0Uy49EHA"
+  { partnerToken = "l3CrVXqaUxS0Gb-cNcEBuA"
   , users = []
   }
