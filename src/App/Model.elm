@@ -2,22 +2,22 @@ module App.Model where
 
 import Login.Model as Login
 import PhotoAlbums.Model as PhotoAlbums
+import Pages
+import Credentials as C
+
 
 type alias Model =
-  { page : Page
+  { page : Pages.Page
   , loginInfo : Login.Model
   , photoAlbums : PhotoAlbums.Model
+  , troopTypes : C.TroopTypes
   }
-
-type Page
-  = LoginPage
-  | PhotoAlbumsPage
-  | LoadingPage
 
 
 initialModel : Model
 initialModel =
-  { page = LoadingPage
+  { page = Pages.LoadingPage
   , loginInfo = Login.initialModel
   , photoAlbums = PhotoAlbums.initialModel
+  , troopTypes = C.initializeTroopTypes
   }

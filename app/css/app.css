@@ -1,70 +1,78 @@
 /* Pallette: http://colorschemedesigner.com/csd-3.5/#0041T00u-w0w0 */
 
-
 /*
- *  Normalize Inputs
+ * Normalize Inputs
  */
 
 
- input[type="text"],
- input[type="password"] {
-   display: block;
-   margin: 0;
-   width: 100%;
-   font-family: sans-serif;
-   font-size: 18px;
-   appearance: none;
-   box-shadow: none;
-   border-radius: none;
-   }
-   input[type="text"]:focus,
-   input[type="password"]:focus {
-     outline: none;
-   }
+input {
+  border: 1px solid;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+  transition: border linear .2s, box-shadow linear .2s;
+  box-sizing: content-box;
+  font-weight: normal;
+}
 
 
-button {
+input[type=text],
+input[type=password] {
   display: inline-block;
-  margin: 0 10px 0 0;
-  padding: 10px 45px;
-  line-height: 1.8;
-  appearance: none;
-  box-shadow: none;
-  border-radius: 0;
-  }
-  button:focus {
-    outline: none;
-  }
-
+  height: 20px;
+  font-size: 14px;
+  line-height: 20px;
+  vertical-align: middle;
+  border-color: rgb(204, 204, 204);
+}
 
 /*
  * General UI Stuff
  */
 
+html.background {
+  background-size: cover;
+  }
+  .bg_0 {
+    background: url('../img/login_bg_0.jpg') no-repeat center center fixed;
+  }
+  .bg_1 {
+    background: url('../img/login_bg_1.jpg') no-repeat center center fixed;
+  }
+  .bg_2 {
+    background: url('../img/login_bg_2.jpg') no-repeat center center fixed;
+  }
+  .bg_3 {
+    background: url('../img/login_bg_3.jpg') no-repeat center center fixed;
+  }
+  .bg_4 {
+    background: url('../img/login_bg_4.jpg') no-repeat center center fixed;
+  }
+  .bg_5 {
+    background: url('../img/login_bg_5.jpg') no-repeat center center fixed;
+  }
+  .bg_6 {
+    background: url('../img/login_bg_6.jpg') no-repeat center center fixed;
+  }
+  .bg_7 {
+    background: url('../img/login_bg_7.jpg') no-repeat center center fixed;
+  }
+  .bg_8 {
+    background: url('../img/login_bg_8.jpg') no-repeat center center fixed;
+  }
+  .bg_9 {
+    background: url('../img/login_bg_9.jpg') no-repeat center center fixed;
+  }
+
+
 body {
-  background: url(../img/content-bg.png) left repeat-y #FFFFFF;
+  font-family: Verdana, Helvetica, Arial;
 }
 
 
 a {
+  color: blue;
   text-decoration: none;
-  color: #A17550;
+  font-weight: bold;
 }
-
-
-input[type="text"],
-input[type="password"] {
-  padding: 10px;
-  border: none;
-  border-bottom: solid 2px #c6c6c6;
-  transition: border 0.3s;
-  }
-  input[type="text"]:focus,
-  input[type="text"].focus,
-  input[type="password"]:focus,
-  input[type="password"].focus {
-    border-bottom: solid 2px #949494;
-  }
 
 
 /*
@@ -81,35 +89,64 @@ input[type="password"] {
   #login-container {
     margin: auto;
     text-align: center;
-    max-width: 300px;
+    background-color: rgba(200, 200, 200, 0.6);
+    border-radius: 25px;
+    padding: 35px 20px 10px 20px;
+    width: 35%;
+    min-width: 250px;
+    color: #002DB2;
+  }
+  #login-container > form {
+    padding-top: 25px;
+  }
+  #login-container input,
+  #login-container button {
+    padding: 10px 5px;
+    margin: 10px 0;
+    width: 80%;
+    color: black;
+  }
+  #login-container button {
+    text-transform: uppercase;
+
+    color: white;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+    background-color: #da4f49;
+    background-image: linear-gradient(to bottom, #ee5f5b,#bd362f);
+    background-repeat: repeat-x;
+    border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2),0 1px 2px rgba(0,0,0,0.05);
+  }
+  #login-container img {
+    max-width: 100%;
+    height: auto;
   }
 
 
-#leftnav {
-  width: 175px;
-  float: left;
-  padding: 0 0 0 15px;
-  }
-  #leftnav ul {
-    padding-left: 0;
-    list-style: inside;
-    list-style-type: none;
-  }
-
-
-#gallery {
-  margin-left: 200px;
+.content {
+  height: 100vh;
   }
   .gallery-items {
     display: flex;
     flex-flow: row wrap;
-    justify-content: flex-start;
+    justify-content: space-between;
+    padding: 20px;
   }
   .gallery-item {
     max-width: 200px;
     padding: 0 10px;
+    text-align: center;
+    background-color: rgba(200, 200, 200, 0.6);
+    padding: 10px 20px 10px 20px;
+    border-radius: 25px;
+    margin: 10px;
   }
   .thumbnail {
     max-width: 100%;
     height: auto;
+  }
+  .footer {
+    text-align: center;
+    width: 100%;
   }

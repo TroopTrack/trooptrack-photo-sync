@@ -14,47 +14,19 @@ import PhotoAlbums.Update as Update
 import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
 
 
-view : Address Update.Action -> C.Credentials -> Model -> Html
-view address credentials model =
+view : Address Update.Action -> C.TroopTypes -> C.Credentials -> Model -> Html
+view address troopTypes credentials model =
  H.div
   [ A.class "content" ]
-  [ leftSide
-    [ userMenu address credentials
-    , troopSelection address credentials
-    , albumSelection address model
-    ]
-  , content address model
+  [ content address troopTypes credentials model
+  , logoutButton address
   ]
-
-
-leftSide : List Html -> Html
-leftSide =
-  H.div
-    [ A.id "leftnav"
-    ]
-
-
-userMenu : Address Update.Action -> C.Credentials -> Html
-userMenu address credentials =
-  H.div
-    []
-    [ greeting credentials
-    , H.hr [] []
-    , H.ul
-      [ A.class "menu" ]
-      [ logoutButton address ]
-    ]
-
-
-greeting : C.Credentials -> Html
-greeting credentials =
-  H.text "Welcome!"
 
 
 logoutButton : Address Update.Action -> Html
 logoutButton address =
-  H.li
-    []
+  H.div
+    [ A.class "footer" ]
     [ H.a
       [ A.href "#"
       , E.onClick address Update.Logout
@@ -63,29 +35,86 @@ logoutButton address =
     ]
 
 
-troopSelection : Address Update.Action -> C.Credentials -> Html
-troopSelection address credentials =
+troopSelection : Address Update.Action
+              -> C.TroopTypes
+              -> C.Credentials
+              -> Model
+              -> Html
+troopSelection address troopTypes credentials model =
   H.div
-    []
-    [ H.br [] []
-    , H.div [] [ H.text "Select a Troop" ]
-    , H.hr [] []
-    , troopMenu address credentials
+    [ A.class "gallery-items" ]
+    <| List.map (troopThumb address troopTypes) credentials.users
+
+
+troopThumb : Signal.Address Update.Action -> C.TroopTypes -> C.User -> H.Html
+troopThumb address troopTypes user =
+  H.div
+    [ A.class "gallery-item" ]
+    [ H.a
+      [ A.href "#"
+      , E.onClick address <| Update.LoadPhotoAlbums user
+      ]
+      [ H.text user.troop ]
+    , H.br [] []
+    , H.a
+      [ A.href "#"
+      , E.onClick address <| Update.LoadPhotoAlbums user
+      ]
+      [ troopImage troopTypes user ]
     ]
 
 
-albumSelection : Address Update.Action -> Model -> Html
-albumSelection address model =
-  if List.isEmpty model.photoAlbums
-    then H.div [] []
-    else
-      H.div
-        []
-        [ H.br [] []
-        , H.div [] [ H.text "Select a Photo Album" ]
-        , H.hr [] []
-        , albumMenu address model
-        ]
+troopImage : C.TroopTypes -> C.User -> H.Html
+troopImage troopTypes user =
+  let
+    troopType =
+      Dict.get user.troop_type_id troopTypes
+        |> Maybe.withDefault C.UnknownTroopType
+
+  in
+    case troopType of
+
+      C.BsaTroop ->
+        H.img [ A.src "img/bsa_share.png" ] []
+
+      C.GsaTroop ->
+        H.img [ A.src "img/gsa_share.png" ] []
+
+      C.AhgTroop ->
+        H.img [ A.src "img/ahg_share.png" ] []
+
+      C.BsaCubs ->
+        H.img [ A.src "img/pack_share.png" ] []
+
+      C.BsaClub ->
+        H.img [ A.src "img/bsa_share.png" ] []
+
+      C.BsaCrew ->
+        H.img [ A.src "img/bsa_share.png" ] []
+
+      C.AuPack ->
+        H.img [ A.src "img/bsa_share.png" ] []
+
+      C.TlTroop ->
+        H.img [ A.src "img/tl_share.png" ] []
+
+      C.BadenPowell ->
+        H.img [ A.src "img/bsa_share.png" ] []
+
+      C.NzGrp ->
+        H.img [ A.src "img/bsa_share.png" ] []
+
+      C.BsaTeam ->
+        H.img [ A.src "img/bsa_share.png" ] []
+
+      C.Cap ->
+        H.img [ A.src "img/cap_share.png" ] []
+
+      C.SeaScouts ->
+        H.img [ A.src "img/ship_share.png" ] []
+
+      C.UnknownTroopType ->
+        H.img [ A.src "img/bsa_share.png" ] []
 
 
 nowrapText : Attribute
@@ -135,8 +164,23 @@ albumMenuItem address currentAlbum renderedAlbum =
     ]
 
 
-content : Address Update.Action -> Model -> Html
-content address model =
+content : Address Update.Action
+       -> C.TroopTypes
+       -> C.Credentials
+       -> Model
+       -> Html
+content address troopTypes credentials model =
+  case model.user of
+
+    Nothing ->
+      troopSelection address troopTypes credentials model
+
+    Just user ->
+      albumContent address model
+
+
+albumContent : Address Update.Action -> Model -> Html
+albumContent address model =
   case model.currentAlbum of
 
     Nothing ->
@@ -146,11 +190,7 @@ content address model =
       in
         H.div
           [ A.id "gallery" ]
-          [ H.h1
-            [ A.class "text-center" ]
-            [ H.text troopName ]
-          , H.br [] []
-          , albumThumbnails address model
+          [ albumThumbnails address model
           ]
 
     Just anAlbum ->

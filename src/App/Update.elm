@@ -2,12 +2,13 @@ module App.Update where
 
 import Effects exposing (Effects)
 
-import App.Model exposing (Model, Page(..), initialModel)
+import App.Model as Model
 
 import Login.Update as Login
 import PhotoAlbums.Update
 import Credentials as C
 import Notifications
+import Pages
 
 
 type Action
@@ -19,14 +20,14 @@ type Action
   | Notify Notifications.Notification
 
 
-init : (Model, Effects Action)
+init : (Model.Model, Effects Action)
 init =
-  ( initialModel
+  ( Model.initialModel
   , getCurrentUser
   )
 
 
-update : Action -> Model -> (Model, Effects Action)
+update : Action -> Model.Model -> (Model.Model, Effects Action)
 update action model =
   case action of
 
@@ -39,14 +40,14 @@ update action model =
       )
 
     ResetSession ->
-      ( initialModel
+      ( Model.initialModel
       , getCurrentUser
       )
 
     CurrentUser maybeCreds ->
       case maybeCreds of
         Nothing ->
-          ( { model | page = LoginPage }
+          ( { model | page = Pages.LoginPage }
           , Effects.none
           )
 
@@ -58,7 +59,10 @@ update action model =
             newLoginInfo =
               { loginInfo | credentials = creds }
           in
-            ( { model | loginInfo = newLoginInfo, page = PhotoAlbumsPage }
+            ( { model
+              | loginInfo = newLoginInfo
+              , page = Pages.PhotoAlbumsPage
+              }
             , Effects.none
             )
 
@@ -74,7 +78,7 @@ update action model =
           if List.isEmpty users then
             model.page
           else
-            PhotoAlbumsPage
+            Pages.PhotoAlbumsPage
 
       in
         ( { model | loginInfo = login, page = page }
@@ -96,6 +100,7 @@ update action model =
 
 
 --- Effects
+
 
 getCurrentUser : Effects Action
 getCurrentUser =

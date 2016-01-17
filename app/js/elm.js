@@ -11355,17 +11355,66 @@ Elm.Credentials.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var initialCredentials = {partnerToken: "l3CrVXqaUxS0Gb-cNcEBuA",users: _U.list([])};
+   var UnknownTroopType = {ctor: "UnknownTroopType"};
+   var SeaScouts = {ctor: "SeaScouts"};
+   var Cap = {ctor: "Cap"};
+   var BsaTeam = {ctor: "BsaTeam"};
+   var NzGrp = {ctor: "NzGrp"};
+   var BadenPowell = {ctor: "BadenPowell"};
+   var AuPack = {ctor: "AuPack"};
+   var BsaCrew = {ctor: "BsaCrew"};
+   var BsaClub = {ctor: "BsaClub"};
+   var BsaCubs = {ctor: "BsaCubs"};
+   var AhgTroop = {ctor: "AhgTroop"};
+   var TlTroop = {ctor: "TlTroop"};
+   var GsaTroop = {ctor: "GsaTroop"};
+   var BsaTroop = {ctor: "BsaTroop"};
+   var initializeTroopTypes = function () {
+      var typesList = _U.list([{ctor: "_Tuple2",_0: 1,_1: BsaTroop}
+                              ,{ctor: "_Tuple2",_0: 5,_1: GsaTroop}
+                              ,{ctor: "_Tuple2",_0: 6,_1: AhgTroop}
+                              ,{ctor: "_Tuple2",_0: 3,_1: BsaCubs}
+                              ,{ctor: "_Tuple2",_0: 7,_1: BsaClub}
+                              ,{ctor: "_Tuple2",_0: 9,_1: BsaCrew}
+                              ,{ctor: "_Tuple2",_0: 10,_1: AuPack}
+                              ,{ctor: "_Tuple2",_0: 12,_1: TlTroop}
+                              ,{ctor: "_Tuple2",_0: 8,_1: BadenPowell}
+                              ,{ctor: "_Tuple2",_0: 13,_1: NzGrp}
+                              ,{ctor: "_Tuple2",_0: 14,_1: BsaTeam}
+                              ,{ctor: "_Tuple2",_0: 15,_1: Cap}
+                              ,{ctor: "_Tuple2",_0: 17,_1: SeaScouts}]);
+      return $Dict.fromList(typesList);
+   }();
    var User = F8(function (a,b,c,d,e,f,g,h) {
       return {token: a,privileges: b,troop: c,troop_id: d,troop_number: e,troop_type: f,troop_type_id: g,user_id: h};
    });
    var Credentials = F2(function (a,b) {    return {partnerToken: a,users: b};});
-   return _elm.Credentials.values = {_op: _op,Credentials: Credentials,User: User,initialCredentials: initialCredentials};
+   return _elm.Credentials.values = {_op: _op
+                                    ,Credentials: Credentials
+                                    ,User: User
+                                    ,BsaTroop: BsaTroop
+                                    ,GsaTroop: GsaTroop
+                                    ,TlTroop: TlTroop
+                                    ,AhgTroop: AhgTroop
+                                    ,BsaCubs: BsaCubs
+                                    ,BsaClub: BsaClub
+                                    ,BsaCrew: BsaCrew
+                                    ,AuPack: AuPack
+                                    ,BadenPowell: BadenPowell
+                                    ,NzGrp: NzGrp
+                                    ,BsaTeam: BsaTeam
+                                    ,Cap: Cap
+                                    ,SeaScouts: SeaScouts
+                                    ,UnknownTroopType: UnknownTroopType
+                                    ,initialCredentials: initialCredentials
+                                    ,initializeTroopTypes: initializeTroopTypes};
 };
 Elm.Login = Elm.Login || {};
 Elm.Login.Model = Elm.Login.Model || {};
@@ -11416,6 +11465,24 @@ Elm.PhotoAlbums.Model.make = function (_elm) {
    var Model = F5(function (a,b,c,d,e) {    return {photoAlbums: a,errorMessage: b,user: c,currentAlbum: d,photoDownloads: e};});
    return _elm.PhotoAlbums.Model.values = {_op: _op,Model: Model,PhotoAlbum: PhotoAlbum,Photo: Photo,initialModel: initialModel,emptyPhoto: emptyPhoto};
 };
+Elm.Pages = Elm.Pages || {};
+Elm.Pages.make = function (_elm) {
+   "use strict";
+   _elm.Pages = _elm.Pages || {};
+   if (_elm.Pages.values) return _elm.Pages.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var LoadingPage = {ctor: "LoadingPage"};
+   var PhotoAlbumsPage = {ctor: "PhotoAlbumsPage"};
+   var LoginPage = {ctor: "LoginPage"};
+   return _elm.Pages.values = {_op: _op,LoginPage: LoginPage,PhotoAlbumsPage: PhotoAlbumsPage,LoadingPage: LoadingPage};
+};
 Elm.App = Elm.App || {};
 Elm.App.Model = Elm.App.Model || {};
 Elm.App.Model.make = function (_elm) {
@@ -11425,25 +11492,22 @@ Elm.App.Model.make = function (_elm) {
    if (_elm.App.Model.values) return _elm.App.Model.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $List = Elm.List.make(_elm),
    $Login$Model = Elm.Login.Model.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Pages = Elm.Pages.make(_elm),
    $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var LoadingPage = {ctor: "LoadingPage"};
-   var initialModel = {page: LoadingPage,loginInfo: $Login$Model.initialModel,photoAlbums: $PhotoAlbums$Model.initialModel};
-   var PhotoAlbumsPage = {ctor: "PhotoAlbumsPage"};
-   var LoginPage = {ctor: "LoginPage"};
-   var Model = F3(function (a,b,c) {    return {page: a,loginInfo: b,photoAlbums: c};});
-   return _elm.App.Model.values = {_op: _op
-                                  ,Model: Model
-                                  ,LoginPage: LoginPage
-                                  ,PhotoAlbumsPage: PhotoAlbumsPage
-                                  ,LoadingPage: LoadingPage
-                                  ,initialModel: initialModel};
+   var initialModel = {page: $Pages.LoadingPage
+                      ,loginInfo: $Login$Model.initialModel
+                      ,photoAlbums: $PhotoAlbums$Model.initialModel
+                      ,troopTypes: $Credentials.initializeTroopTypes};
+   var Model = F4(function (a,b,c,d) {    return {page: a,loginInfo: b,photoAlbums: c,troopTypes: d};});
+   return _elm.App.Model.values = {_op: _op,Model: Model,initialModel: initialModel};
 };
 Elm.Notifications = Elm.Notifications || {};
 Elm.Notifications.make = function (_elm) {
@@ -11637,6 +11701,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       ,url: "http://trooptrack.dev/api/v1/photo_albums"
       ,body: $Http.empty}));
    });
+   var updateUser = F2(function (user,model) {    return _U.update(model,{user: user,currentAlbum: $Maybe.Nothing});});
    var NoOp = {ctor: "NoOp"};
    var downloadAlbum = function (album) {
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,albumDownloader.address,album.photos)));
@@ -11673,7 +11738,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
          case "Logout": return {ctor: "_Tuple2",_0: model,_1: logout};
          case "CurrentAlbum": return {ctor: "_Tuple2",_0: _U.update(model,{currentAlbum: _p2._0}),_1: $Effects.none};
          case "LoadPhotoAlbums": var _p3 = _p2._0;
-           return {ctor: "_Tuple2",_0: _U.update(model,{user: $Maybe.Just(_p3),currentAlbum: $Maybe.Nothing}),_1: A2(loadPhotoAlbums,partnerToken,_p3)};
+           return {ctor: "_Tuple2",_0: A2(updateUser,$Maybe.Just(_p3),model),_1: A2(loadPhotoAlbums,partnerToken,_p3)};
          case "DisplayPhotoAlbums": var _p4 = _p2._0;
            if (_p4.ctor === "Ok") {
                  var _p5 = _p4._0;
@@ -11723,6 +11788,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
                                            ,Logout: Logout
                                            ,NoOp: NoOp
                                            ,update: update
+                                           ,updateUser: updateUser
                                            ,loadPhotoAlbums: loadPhotoAlbums
                                            ,sendPhotoAlbumsRequest: sendPhotoAlbumsRequest
                                            ,fetchAlbumDetails: fetchAlbumDetails
@@ -11757,6 +11823,7 @@ Elm.App.Update.make = function (_elm) {
    $Login$Update = Elm.Login.Update.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Notifications = Elm.Notifications.make(_elm),
+   $Pages = Elm.Pages.make(_elm),
    $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
@@ -11782,17 +11849,17 @@ Elm.App.Update.make = function (_elm) {
          case "ResetSession": return {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
          case "CurrentUser": var _p1 = _p0._0;
            if (_p1.ctor === "Nothing") {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{page: $App$Model.LoginPage}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{page: $Pages.LoginPage}),_1: $Effects.none};
               } else {
                  var loginInfo = model.loginInfo;
                  var newLoginInfo = _U.update(loginInfo,{credentials: _p1._0});
-                 return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: newLoginInfo,page: $App$Model.PhotoAlbumsPage}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: newLoginInfo,page: $Pages.PhotoAlbumsPage}),_1: $Effects.none};
               }
          case "Authentication": var _p2 = A2($Login$Update.update,_p0._0,model.loginInfo);
            var login = _p2._0;
            var fx = _p2._1;
            var users = login.credentials.users;
-           var page = $List.isEmpty(users) ? model.page : $App$Model.PhotoAlbumsPage;
+           var page = $List.isEmpty(users) ? model.page : $Pages.PhotoAlbumsPage;
            return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: login,page: page}),_1: A2($Effects.map,Authentication,fx)};
          default: var credentials = model.loginInfo.credentials;
            var _p3 = A3($PhotoAlbums$Update.update,_p0._0,credentials.partnerToken,model.photoAlbums);
@@ -11833,7 +11900,7 @@ Elm.Layouts.make = function (_elm) {
       _U.list([$Html$Attributes.id("login-page")]),
       _U.list([A2($Html.div,
       _U.list([$Html$Attributes.id("login-container")]),
-      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Trooptrack")]))
+      _U.list([A2($Html.img,_U.list([$Html$Attributes.src("img/logo-large.png"),$Html$Attributes.alt("TroopTrack")]),_U.list([]))
               ,A2($Html.h2,_U.list([$Html$Attributes.$class("subheader")]),_U.list([$Html.text("Photo Album Manager")]))
               ,content]))]));
    };
@@ -11861,9 +11928,21 @@ Elm.Login.View.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var toMessage = F3(function (address,toAction,val) {    return A2($Signal.message,address,toAction(val));});
+   var termsOfService = A2($Html.div,
+   _U.list([]),
+   _U.list([$Html.text("Use of this site constitutes acceptance of our")
+           ,A2($Html.br,_U.list([]),_U.list([]))
+           ,A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/terms_of_service")]),_U.list([$Html.text("Terms of Service")]))
+           ,$Html.text(" and ")
+           ,A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/privacy")]),_U.list([$Html.text("Privacy Policy")]))
+           ,A2($Html.br,_U.list([]),_U.list([]))
+           ,A2($Html.br,_U.list([]),_U.list([]))
+           ,$Html.text("© 2008 - 2016 TroopTrack LLC.")]));
    var forgotPassword = A2($Html.p,
-   _U.list([$Html$Attributes.$class("text-center")]),
-   _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#")]),_U.list([$Html.text("Forgot your password?")]))]));
+   _U.list([]),
+   _U.list([A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/password_resets/new")]),_U.list([$Html.text("Forgot your password?")]))
+           ,$Html.text("|")
+           ,A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/forgot_user_names/new")]),_U.list([$Html.text("Forgot your username?")]))]));
    var submitButton = F2(function (address,model) {
       var buttonText = function () {    var _p0 = model.authenticating;if (_p0 === true) {    return "Please wait...";} else {    return "Log in";}}();
       return A2($Html.p,
@@ -11908,7 +11987,8 @@ Elm.Login.View.make = function (_elm) {
                       ,A3($Html$Events.on,"input",$Html$Events.targetValue,A2(toMessage,address,$Login$Update.Password))
                       ,$Html$Attributes.value(model.password)]))
               ,A2(submitButton,address,model)
-              ,forgotPassword]));
+              ,forgotPassword
+              ,termsOfService]));
    });
    var view = F2(function (address,model) {    return $Layouts.centered(A2(viewContent,address,model));});
    return _elm.Login.View.values = {_op: _op
@@ -11919,6 +11999,7 @@ Elm.Login.View.make = function (_elm) {
                                    ,field: field
                                    ,submitButton: submitButton
                                    ,forgotPassword: forgotPassword
+                                   ,termsOfService: termsOfService
                                    ,toMessage: toMessage};
 };
 Elm.PhotoAlbums = Elm.PhotoAlbums || {};
@@ -12014,15 +12095,11 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    var photoThumbnails = F3(function (address,album,model) {
       return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,A2(photoThumbnail,address,model),album.photos));
    });
-   var content = F2(function (address,model) {
+   var albumContent = F2(function (address,model) {
       var _p1 = model.currentAlbum;
       if (_p1.ctor === "Nothing") {
             var troopName = A2($Maybe.withDefault,"",A2($Maybe.map,function (_) {    return _.troop;},model.user));
-            return A2($Html.div,
-            _U.list([$Html$Attributes.id("gallery")]),
-            _U.list([A2($Html.h1,_U.list([$Html$Attributes.$class("text-center")]),_U.list([$Html.text(troopName)]))
-                    ,A2($Html.br,_U.list([]),_U.list([]))
-                    ,A2(albumThumbnails,address,model)]));
+            return A2($Html.div,_U.list([$Html$Attributes.id("gallery")]),_U.list([A2(albumThumbnails,address,model)]));
          } else {
             var _p2 = _p1._0;
             return A2($Html.div,
@@ -12035,56 +12112,68 @@ Elm.PhotoAlbums.View.make = function (_elm) {
                     ,A3(photoThumbnails,address,_p2,model)]));
          }
    });
-   var albumSelection = F2(function (address,model) {
-      return $List.isEmpty(model.photoAlbums) ? A2($Html.div,_U.list([]),_U.list([])) : A2($Html.div,
-      _U.list([]),
-      _U.list([A2($Html.br,_U.list([]),_U.list([]))
-              ,A2($Html.div,_U.list([]),_U.list([$Html.text("Select a Photo Album")]))
-              ,A2($Html.hr,_U.list([]),_U.list([]))
-              ,A2(albumMenu,address,model)]));
+   var troopImage = F2(function (troopTypes,user) {
+      var troopType = A2($Maybe.withDefault,$Credentials.UnknownTroopType,A2($Dict.get,user.troop_type_id,troopTypes));
+      var _p3 = troopType;
+      switch (_p3.ctor)
+      {case "BsaTroop": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
+         case "GsaTroop": return A2($Html.img,_U.list([$Html$Attributes.src("img/gsa_share.png")]),_U.list([]));
+         case "AhgTroop": return A2($Html.img,_U.list([$Html$Attributes.src("img/ahg_share.png")]),_U.list([]));
+         case "BsaCubs": return A2($Html.img,_U.list([$Html$Attributes.src("img/pack_share.png")]),_U.list([]));
+         case "BsaClub": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
+         case "BsaCrew": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
+         case "AuPack": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
+         case "TlTroop": return A2($Html.img,_U.list([$Html$Attributes.src("img/tl_share.png")]),_U.list([]));
+         case "BadenPowell": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
+         case "NzGrp": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
+         case "BsaTeam": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
+         case "Cap": return A2($Html.img,_U.list([$Html$Attributes.src("img/cap_share.png")]),_U.list([]));
+         case "SeaScouts": return A2($Html.img,_U.list([$Html$Attributes.src("img/ship_share.png")]),_U.list([]));
+         default: return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));}
    });
-   var troopSelection = F2(function (address,credentials) {
+   var troopThumb = F3(function (address,troopTypes,user) {
       return A2($Html.div,
-      _U.list([]),
-      _U.list([A2($Html.br,_U.list([]),_U.list([]))
-              ,A2($Html.div,_U.list([]),_U.list([$Html.text("Select a Troop")]))
-              ,A2($Html.hr,_U.list([]),_U.list([]))
-              ,A2(troopMenu,address,credentials)]));
+      _U.list([$Html$Attributes.$class("gallery-item")]),
+      _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.LoadPhotoAlbums(user))]),
+              _U.list([$Html.text(user.troop)]))
+              ,A2($Html.br,_U.list([]),_U.list([]))
+              ,A2($Html.a,
+              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.LoadPhotoAlbums(user))]),
+              _U.list([A2(troopImage,troopTypes,user)]))]));
+   });
+   var troopSelection = F4(function (address,troopTypes,credentials,model) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,A2(troopThumb,address,troopTypes),credentials.users));
+   });
+   var content = F4(function (address,troopTypes,credentials,model) {
+      var _p4 = model.user;
+      if (_p4.ctor === "Nothing") {
+            return A4(troopSelection,address,troopTypes,credentials,model);
+         } else {
+            return A2(albumContent,address,model);
+         }
    });
    var logoutButton = function (address) {
-      return A2($Html.li,
-      _U.list([]),
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("footer")]),
       _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.Logout)]),_U.list([$Html.text("Logout")]))]));
    };
-   var greeting = function (credentials) {    return $Html.text("Welcome!");};
-   var userMenu = F2(function (address,credentials) {
-      return A2($Html.div,
-      _U.list([]),
-      _U.list([greeting(credentials)
-              ,A2($Html.hr,_U.list([]),_U.list([]))
-              ,A2($Html.ul,_U.list([$Html$Attributes.$class("menu")]),_U.list([logoutButton(address)]))]));
-   });
-   var leftSide = $Html.div(_U.list([$Html$Attributes.id("leftnav")]));
-   var view = F3(function (address,credentials,model) {
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("content")]),
-      _U.list([leftSide(_U.list([A2(userMenu,address,credentials),A2(troopSelection,address,credentials),A2(albumSelection,address,model)]))
-              ,A2(content,address,model)]));
+   var view = F4(function (address,troopTypes,credentials,model) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class("content")]),_U.list([A4(content,address,troopTypes,credentials,model),logoutButton(address)]));
    });
    return _elm.PhotoAlbums.View.values = {_op: _op
                                          ,view: view
-                                         ,leftSide: leftSide
-                                         ,userMenu: userMenu
-                                         ,greeting: greeting
                                          ,logoutButton: logoutButton
                                          ,troopSelection: troopSelection
-                                         ,albumSelection: albumSelection
+                                         ,troopThumb: troopThumb
+                                         ,troopImage: troopImage
                                          ,nowrapText: nowrapText
                                          ,troopMenu: troopMenu
                                          ,troopMenuItem: troopMenuItem
                                          ,albumMenu: albumMenu
                                          ,albumMenuItem: albumMenuItem
                                          ,content: content
+                                         ,albumContent: albumContent
                                          ,albumThumbnails: albumThumbnails
                                          ,albumThumbnail: albumThumbnail
                                          ,albumName: albumName
@@ -12128,6 +12217,7 @@ Elm.App.View.make = function (_elm) {
    $Loading$View = Elm.Loading.View.make(_elm),
    $Login$View = Elm.Login.View.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Pages = Elm.Pages.make(_elm),
    $PhotoAlbums$View = Elm.PhotoAlbums.View.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
@@ -12137,7 +12227,11 @@ Elm.App.View.make = function (_elm) {
       switch (_p0.ctor)
       {case "LoadingPage": return $Loading$View.view;
          case "LoginPage": return A2($Login$View.view,A2($Signal.forwardTo,address,$App$Update.Authentication),model.loginInfo);
-         default: return A3($PhotoAlbums$View.view,A2($Signal.forwardTo,address,$App$Update.PhotoAlbums),model.loginInfo.credentials,model.photoAlbums);}
+         default: return A4($PhotoAlbums$View.view,
+           A2($Signal.forwardTo,address,$App$Update.PhotoAlbums),
+           model.troopTypes,
+           model.loginInfo.credentials,
+           model.photoAlbums);}
    });
    return _elm.App.View.values = {_op: _op,view: view};
 };

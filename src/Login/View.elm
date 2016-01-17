@@ -33,6 +33,7 @@ viewContent address model =
         ]
     , submitButton address model
     , forgotPassword
+    , termsOfService
     ]
 
 
@@ -88,10 +89,33 @@ submitButton address model =
 
 forgotPassword : Html
 forgotPassword =
-  H.p [ A.class "text-center" ]
+  H.p []
     [ H.a
-      [ A.href "#" ]
+      [ A.href "https://trooptrack.com/password_resets/new"
+      ]
       [ H.text "Forgot your password?" ]
+    , H.text "|"
+    , H.a
+      [ A.href "https://trooptrack.com/forgot_user_names/new"
+      ]
+      [ H.text "Forgot your username?" ]
+    ]
+
+termsOfService : Html
+termsOfService =
+  H.div []
+    [ H.text "Use of this site constitutes acceptance of our"
+    , H.br [] []
+    , H.a
+      [ A.href "https://trooptrack.com/terms_of_service" ]
+      [ H.text "Terms of Service" ]
+    , H.text " and "
+    , H.a
+      [ A.href "https://trooptrack.com/privacy" ]
+      [ H.text "Privacy Policy" ]
+    , H.br [] []
+    , H.br [] []
+    , H.text "© 2008 - 2016 TroopTrack LLC."
     ]
 
 

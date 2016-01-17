@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js background" lang="en">
 
 <head>
   <meta charset="utf-8" />
@@ -12,10 +12,13 @@
 
 <body>
   <script type="application/javascript">
-    window.$ = window.jQuery = require('./js/vendor/jquery.min.js');
+    var bgNumber = Math.floor(Math.random() * (10 - 0));
+    document.documentElement.classList.add("bg_" + bgNumber);
+  </script>
+  <script type="application/javascript">
+    window.$ = window.jQuery = require('jquery');
   </script>
   <script src="js/elm.js"></script>
-  <script src="js/pouchdb.min.js"></script>
   <script src="js/storage.js"></script>
   <script type="application/javascript">
     var nullPhoto = {

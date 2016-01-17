@@ -42,7 +42,7 @@ update action partnerToken model =
       )
 
     LoadPhotoAlbums user ->
-      ( { model | user = Just user, currentAlbum = Nothing }
+      ( updateUser (Just user) model
       , loadPhotoAlbums partnerToken user
       )
 
@@ -134,6 +134,10 @@ update action partnerToken model =
         , Effects.none
         )
 
+
+updateUser : Maybe C.User -> Model -> Model
+updateUser user model =
+  { model | user = user, currentAlbum = Nothing }
 
 {-
 Side effects
