@@ -11459,11 +11459,25 @@ Elm.PhotoAlbums.Model.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var emptyPhoto = {photoUrl: "",photoId: 0,path: _U.list([])};
-   var initialModel = {photoAlbums: _U.list([]),errorMessage: $Maybe.Nothing,user: $Maybe.Nothing,currentAlbum: $Maybe.Nothing,photoDownloads: $Dict.empty};
+   var MenuOff = {ctor: "MenuOff"};
+   var initialModel = {photoAlbums: _U.list([])
+                      ,errorMessage: $Maybe.Nothing
+                      ,user: $Maybe.Nothing
+                      ,currentAlbum: $Maybe.Nothing
+                      ,photoDownloads: $Dict.empty
+                      ,menuState: MenuOff};
+   var MenuOn = {ctor: "MenuOn"};
    var Photo = F3(function (a,b,c) {    return {photoUrl: a,photoId: b,path: c};});
    var PhotoAlbum = F5(function (a,b,c,d,e) {    return {name: a,takenOn: b,photoCount: c,photoAlbumId: d,photos: e};});
-   var Model = F5(function (a,b,c,d,e) {    return {photoAlbums: a,errorMessage: b,user: c,currentAlbum: d,photoDownloads: e};});
-   return _elm.PhotoAlbums.Model.values = {_op: _op,Model: Model,PhotoAlbum: PhotoAlbum,Photo: Photo,initialModel: initialModel,emptyPhoto: emptyPhoto};
+   var Model = F6(function (a,b,c,d,e,f) {    return {photoAlbums: a,errorMessage: b,user: c,currentAlbum: d,photoDownloads: e,menuState: f};});
+   return _elm.PhotoAlbums.Model.values = {_op: _op
+                                          ,Model: Model
+                                          ,PhotoAlbum: PhotoAlbum
+                                          ,Photo: Photo
+                                          ,MenuOn: MenuOn
+                                          ,MenuOff: MenuOff
+                                          ,initialModel: initialModel
+                                          ,emptyPhoto: emptyPhoto};
 };
 Elm.Pages = Elm.Pages || {};
 Elm.Pages.make = function (_elm) {
@@ -11701,7 +11715,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       ,url: "http://trooptrack.dev/api/v1/photo_albums"
       ,body: $Http.empty}));
    });
-   var updateUser = F2(function (user,model) {    return _U.update(model,{user: user,currentAlbum: $Maybe.Nothing});});
+   var updateUser = F2(function (user,model) {    return _U.update(model,{user: user,currentAlbum: $Maybe.Nothing,photoAlbums: _U.list([])});});
    var NoOp = {ctor: "NoOp"};
    var downloadAlbum = function (album) {
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,albumDownloader.address,album.photos)));
@@ -11709,6 +11723,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
    var downloadPhoto = function (photo) {    return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,photoDownloader.address,photo)));};
    var logout = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,endSession.address,{ctor: "_Tuple0"})));
    var Logout = {ctor: "Logout"};
+   var SetMenuState = function (a) {    return {ctor: "SetMenuState",_0: a};};
    var CancelDownload = function (a) {    return {ctor: "CancelDownload",_0: a};};
    var DownloadComplete = function (a) {    return {ctor: "DownloadComplete",_0: a};};
    var completeDownload = function (photo) {
@@ -11727,6 +11742,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
             return $Effects.task(A2($Task.map,UpdatePhotoAlbum,$Task.toResult(A3(sendPhotoAlbumDetailsRequest,partnerToken,_p1._0,album))));
          }
    });
+   var DisplayTroopSelection = {ctor: "DisplayTroopSelection"};
    var DisplayPhotoAlbums = function (a) {    return {ctor: "DisplayPhotoAlbums",_0: a};};
    var loadPhotoAlbums = F2(function (partnerToken,user) {
       return $Effects.task(A2($Task.map,DisplayPhotoAlbums,$Task.toResult(A2(sendPhotoAlbumsRequest,partnerToken,user))));
@@ -11736,9 +11752,12 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       switch (_p2.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
          case "Logout": return {ctor: "_Tuple2",_0: model,_1: logout};
-         case "CurrentAlbum": return {ctor: "_Tuple2",_0: _U.update(model,{currentAlbum: _p2._0}),_1: $Effects.none};
+         case "SetMenuState": return {ctor: "_Tuple2",_0: _U.update(model,{menuState: _p2._0}),_1: $Effects.none};
+         case "CurrentAlbum": return {ctor: "_Tuple2",_0: _U.update(model,{currentAlbum: _p2._0,menuState: $PhotoAlbums$Model.MenuOff}),_1: $Effects.none};
          case "LoadPhotoAlbums": var _p3 = _p2._0;
            return {ctor: "_Tuple2",_0: A2(updateUser,$Maybe.Just(_p3),model),_1: A2(loadPhotoAlbums,partnerToken,_p3)};
+         case "DisplayTroopSelection": var newModel = A2(updateUser,$Maybe.Nothing,model);
+           return {ctor: "_Tuple2",_0: _U.update(newModel,{menuState: $PhotoAlbums$Model.MenuOff}),_1: $Effects.none};
          case "DisplayPhotoAlbums": var _p4 = _p2._0;
            if (_p4.ctor === "Ok") {
                  var _p5 = _p4._0;
@@ -11778,6 +11797,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
    return _elm.PhotoAlbums.Update.values = {_op: _op
                                            ,LoadPhotoAlbums: LoadPhotoAlbums
                                            ,DisplayPhotoAlbums: DisplayPhotoAlbums
+                                           ,DisplayTroopSelection: DisplayTroopSelection
                                            ,UpdatePhotoAlbum: UpdatePhotoAlbum
                                            ,CurrentAlbum: CurrentAlbum
                                            ,DownloadPhoto: DownloadPhoto
@@ -11785,6 +11805,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
                                            ,DownloadProgress: DownloadProgress
                                            ,DownloadComplete: DownloadComplete
                                            ,CancelDownload: CancelDownload
+                                           ,SetMenuState: SetMenuState
                                            ,Logout: Logout
                                            ,NoOp: NoOp
                                            ,update: update
@@ -12038,26 +12059,6 @@ Elm.PhotoAlbums.View.make = function (_elm) {
       return _U.cmp($List.length(activeDownloads),0) > 0 ? theMessage : theButton;
    });
    var albumName = function (album) {    return A2($Basics._op["++"],album.name,A2($Basics._op["++"]," (",A2($Basics._op["++"],album.takenOn,")")));};
-   var albumMenuItem = F3(function (address,currentAlbum,renderedAlbum) {
-      return A2($Html.li,
-      _U.list([]),
-      _U.list([A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(renderedAlbum)))]),
-      _U.list([$Html.text(renderedAlbum.name)]))]));
-   });
-   var albumMenu = F2(function (address,model) {
-      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu vertical")]),A2($List.map,A2(albumMenuItem,address,model.currentAlbum),model.photoAlbums));
-   });
-   var troopMenuItem = F2(function (address,user) {
-      return A2($Html.li,
-      _U.list([]),
-      _U.list([A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.LoadPhotoAlbums(user))]),
-      _U.list([$Html.text(user.troop)]))]));
-   });
-   var troopMenu = F2(function (address,credentials) {
-      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu vertical")]),A2($List.map,troopMenuItem(address),credentials.users));
-   });
    var nowrapText = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "white-space",_1: "nowrap"}
                                                    ,{ctor: "_Tuple2",_0: "overflow",_1: "hidden"}
                                                    ,{ctor: "_Tuple2",_0: "text-overflow",_1: "ellipsis"}]));
@@ -12098,24 +12099,15 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    var albumContent = F2(function (address,model) {
       var _p1 = model.currentAlbum;
       if (_p1.ctor === "Nothing") {
-            var troopName = A2($Maybe.withDefault,"",A2($Maybe.map,function (_) {    return _.troop;},model.user));
             return A2($Html.div,_U.list([$Html$Attributes.id("gallery")]),_U.list([A2(albumThumbnails,address,model)]));
          } else {
-            var _p2 = _p1._0;
-            return A2($Html.div,
-            _U.list([$Html$Attributes.id("gallery")]),
-            _U.list([A2($Html.h1,_U.list([$Html$Attributes.$class("text-center")]),_U.list([$Html.text(_p2.name)]))
-                    ,A2($Html.h5,
-                    _U.list([$Html$Attributes.$class("text-center"),nowrapText]),
-                    _U.list([$Html.text("[ "),A3(downloadAllButton,address,_p2,model),$Html.text(" ]")]))
-                    ,A2($Html.br,_U.list([]),_U.list([]))
-                    ,A3(photoThumbnails,address,_p2,model)]));
+            return A2($Html.div,_U.list([$Html$Attributes.id("gallery")]),_U.list([A3(photoThumbnails,address,_p1._0,model)]));
          }
    });
    var troopImage = F2(function (troopTypes,user) {
       var troopType = A2($Maybe.withDefault,$Credentials.UnknownTroopType,A2($Dict.get,user.troop_type_id,troopTypes));
-      var _p3 = troopType;
-      switch (_p3.ctor)
+      var _p2 = troopType;
+      switch (_p2.ctor)
       {case "BsaTroop": return A2($Html.img,_U.list([$Html$Attributes.src("img/bsa_share.png")]),_U.list([]));
          case "GsaTroop": return A2($Html.img,_U.list([$Html$Attributes.src("img/gsa_share.png")]),_U.list([]));
          case "AhgTroop": return A2($Html.img,_U.list([$Html$Attributes.src("img/ahg_share.png")]),_U.list([]));
@@ -12146,32 +12138,100 @@ Elm.PhotoAlbums.View.make = function (_elm) {
       return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,A2(troopThumb,address,troopTypes),credentials.users));
    });
    var content = F4(function (address,troopTypes,credentials,model) {
-      var _p4 = model.user;
-      if (_p4.ctor === "Nothing") {
+      var _p3 = model.user;
+      if (_p3.ctor === "Nothing") {
             return A4(troopSelection,address,troopTypes,credentials,model);
          } else {
             return A2(albumContent,address,model);
          }
    });
-   var logoutButton = function (address) {
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("footer")]),
-      _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.Logout)]),_U.list([$Html.text("Logout")]))]));
+   var topbar = F2(function (address,model) {
+      var hamburger = A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-bars")]),_U.list([]));
+      var button = A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.SetMenuState($PhotoAlbums$Model.MenuOn))]),
+      _U.list([hamburger]));
+      var item = function (content) {    return A2($Html.div,_U.list([$Html$Attributes.$class("top-bar-item")]),content);};
+      return A2($Html.div,_U.list([$Html$Attributes.id("top-bar")]),_U.list([item(_U.list([button]))]));
+   });
+   var menuStateClass = function (model) {    var _p4 = model.menuState;if (_p4.ctor === "MenuOn") {    return "active";} else {    return "";}};
+   var mask = function (model) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class(A2($Basics._op["++"],"mask ",menuStateClass(model))),$Html$Attributes.id("mask")]),_U.list([]));
    };
+   var fontAwesome = function (iconName) {
+      var className = A2($Basics._op["++"],"fa fa-",iconName);
+      return A2($Html.i,_U.list([$Html$Attributes.$class(className)]),_U.list([]));
+   };
+   var menuItem = F5(function (address,action,icon,text,current) {
+      var $class = current ? "menu-item current" : "menu-item";
+      return A2($Html.li,
+      _U.list([$Html$Attributes.$class($class)]),
+      _U.list([A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,action),$Html$Attributes.$class("menu-link")]),
+      _U.list([icon,A2($Html.span,_U.list([$Html$Attributes.$class("title")]),_U.list([$Html.text(text)]))]))]));
+   });
+   var albumsMenu = F2(function (address,model) {
+      var isCurrent = function (album) {
+         var _p5 = model.currentAlbum;
+         if (_p5.ctor === "Nothing") {
+               return false;
+            } else {
+               return _U.eq(_p5._0.photoAlbumId,album.photoAlbumId);
+            }
+      };
+      var albumMenuItem = function (album) {
+         return A5(menuItem,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)),fontAwesome("picture-o"),album.name,isCurrent(album));
+      };
+      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu-items")]),A2($List.map,albumMenuItem,model.photoAlbums));
+   });
+   var troopMenu = F2(function (address,model) {
+      var _p6 = model.user;
+      if (_p6.ctor === "Nothing") {
+            return $Html.text("");
+         } else {
+            var isCurrent = function (album) {    var _p7 = album;if (_p7.ctor === "Nothing") {    return true;} else {    return false;}};
+            return A2($Html.ul,
+            _U.list([$Html$Attributes.$class("menu-items")]),
+            _U.list([A5(menuItem,
+            address,
+            $PhotoAlbums$Update.CurrentAlbum($Maybe.Nothing),
+            fontAwesome("caret-down"),
+            _p6._0.troop,
+            isCurrent(model.currentAlbum))]));
+         }
+   });
+   var menu = F2(function (address,model) {
+      return A2($Html.nav,
+      _U.list([$Html$Attributes.id("menu"),$Html$Attributes.$class(menuStateClass(model))]),
+      _U.list([A2($Html.ul,
+              _U.list([$Html$Attributes.$class("menu-items")]),
+              _U.list([A5(menuItem,address,$PhotoAlbums$Update.SetMenuState($PhotoAlbums$Model.MenuOff),fontAwesome("times"),"Close Menu",false)
+                      ,A5(menuItem,address,$PhotoAlbums$Update.Logout,fontAwesome("sign-out"),"Sign out",false)
+                      ,A5(menuItem,address,$PhotoAlbums$Update.DisplayTroopSelection,fontAwesome("users"),"Troops",false)]))
+              ,A2(troopMenu,address,model)
+              ,A2(albumsMenu,address,model)]));
+   });
    var view = F4(function (address,troopTypes,credentials,model) {
-      return A2($Html.div,_U.list([$Html$Attributes.$class("content")]),_U.list([A4(content,address,troopTypes,credentials,model),logoutButton(address)]));
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([A2(topbar,address,model)
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),_U.list([A4(content,address,troopTypes,credentials,model)]))
+              ,A2(menu,address,model)
+              ,mask(model)]));
    });
    return _elm.PhotoAlbums.View.values = {_op: _op
                                          ,view: view
-                                         ,logoutButton: logoutButton
+                                         ,menu: menu
+                                         ,troopMenu: troopMenu
+                                         ,albumsMenu: albumsMenu
+                                         ,menuItem: menuItem
+                                         ,fontAwesome: fontAwesome
+                                         ,mask: mask
+                                         ,menuStateClass: menuStateClass
+                                         ,topbar: topbar
                                          ,troopSelection: troopSelection
                                          ,troopThumb: troopThumb
                                          ,troopImage: troopImage
                                          ,nowrapText: nowrapText
-                                         ,troopMenu: troopMenu
-                                         ,troopMenuItem: troopMenuItem
-                                         ,albumMenu: albumMenu
-                                         ,albumMenuItem: albumMenuItem
                                          ,content: content
                                          ,albumContent: albumContent
                                          ,albumThumbnails: albumThumbnails

@@ -6,8 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TroopTrack Photo Albums</title>
   <link rel="stylesheet" href="css/normalize.css">
+  <link
+    rel="stylesheet"
+    href="../node_modules/font-awesome/css/font-awesome.css">
   <link rel="stylesheet" href="css/toastr.css">
-  <link rel="stylesheet" href="css/app.css"
+  <link rel="stylesheet" href="css/app.css">
 </head>
 
 <body>
@@ -27,7 +30,7 @@
       path : []
     };
 
-    var app = Elm.fullscreen(Elm.App, {
+    var elmThing = Elm.fullscreen(Elm.App, {
       setCurrentUser: null,
       downloadProgress: [0.0, nullPhoto],
       cancelledDownload: nullPhoto,
@@ -36,13 +39,13 @@
     });
 
     var storage = require('./js/storage.js');
-    storage.connectTo(app);
+    storage.connectTo(elmThing);
 
     var downloads = require('./js/downloads.js');
-    downloads(app);
+    downloads(elmThing);
 
     var notifications = require('./js/notifications.js');
-    notifications(app);
+    notifications(elmThing);
   </script>
 </body>
 

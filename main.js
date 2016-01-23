@@ -27,13 +27,11 @@ app.on('ready', function() {
     height: 700
   });
 
-  // and load the index.html of the app.
-  // mainWindow.loadURL('file://' + __dirname + '/app/index.html');
-  // mainWindow.loadURL('file://' + __dirname + '/app/portfolio.html');
-  mainWindow.loadURL('file://' + __dirname + '/app/authentication.html');
+  var menus = require('./menus.js');
+  menus(app);
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // and load the index.html of the app.
+  mainWindow.loadURL('file://' + __dirname + '/app/authentication.html');
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {

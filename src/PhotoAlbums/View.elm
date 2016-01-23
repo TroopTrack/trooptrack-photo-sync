@@ -11,28 +11,181 @@ import Html.Events as E
 
 import Credentials as C
 import PhotoAlbums.Update as Update
-import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
+import PhotoAlbums.Model as Model exposing (Model, PhotoAlbum, Photo)
 
 
 view : Address Update.Action -> C.TroopTypes -> C.Credentials -> Model -> Html
 view address troopTypes credentials model =
  H.div
-  [ A.class "content" ]
-  [ content address troopTypes credentials model
-  , logoutButton address
+  []
+  [ topbar address model
+  , H.div
+    [ A.class "content" ]
+    [ content address troopTypes credentials model
+    ]
+  , menu address model
+  , mask model
   ]
 
 
-logoutButton : Address Update.Action -> Html
-logoutButton address =
-  H.div
-    [ A.class "footer" ]
-    [ H.a
-      [ A.href "#"
-      , E.onClick address Update.Logout
-      ]
-      [ H.text "Logout" ]
+menu : Address Update.Action -> Model -> Html
+menu address model =
+  H.nav
+    [ A.id "menu",
+      A.class <| menuStateClass model
     ]
+    [ H.ul
+      [ A.class "menu-items"
+      ]
+      [ menuItem
+          address
+          (Update.SetMenuState Model.MenuOff)
+          (fontAwesome "times")
+          "Close Menu"
+          False
+      , menuItem
+          address
+          Update.Logout
+          (fontAwesome "sign-out")
+          "Sign out"
+          False
+      , menuItem
+          address
+          Update.DisplayTroopSelection
+          (fontAwesome "users")
+          "Troops"
+          False
+      ]
+    , troopMenu address model
+    , albumsMenu address model
+    ]
+
+
+troopMenu : Address Update.Action -> Model -> Html
+troopMenu address model =
+  case model.user of
+    Nothing ->
+      H.text ""
+
+    Just user ->
+      let
+        isCurrent album =
+          case album of
+            Nothing -> True
+            Just _ -> False
+      in
+        H.ul
+          [ A.class "menu-items" ]
+          [ menuItem
+              address
+              (Update.CurrentAlbum Nothing)
+              (fontAwesome "caret-down")
+              user.troop
+              (isCurrent model.currentAlbum)
+          ]
+
+
+albumsMenu : Address Update.Action -> Model -> Html
+albumsMenu address model =
+  let
+    isCurrent album =
+      case model.currentAlbum of
+        Nothing ->
+          False
+
+        Just current ->
+          current.photoAlbumId == album.photoAlbumId
+
+    albumMenuItem album =
+      menuItem
+        address
+        (Update.CurrentAlbum (Just album))
+        (fontAwesome "picture-o")
+        album.name
+        (isCurrent album)
+  in
+    H.ul
+      [ A.class "menu-items" ]
+      <| List.map albumMenuItem model.photoAlbums
+
+
+menuItem : Address Update.Action
+        -> Update.Action
+        -> Html
+        -> String
+        -> Bool
+        -> Html
+menuItem address action icon text current =
+  let
+    class =
+      if current
+        then "menu-item current"
+        else "menu-item"
+  in
+    H.li
+      [ A.class class ]
+      [ H.a
+        [ A.href "#"
+        , E.onClick address action
+        , A.class "menu-link"
+        ]
+        [ icon
+        , H.span
+          [ A.class "title" ]
+          [ H.text text ]
+        ]
+      ]
+
+
+fontAwesome : String -> Html
+fontAwesome iconName =
+  let
+    className = "fa fa-" ++ iconName
+  in
+    H.i [ A.class className ] []
+
+
+mask : Model -> Html
+mask model =
+  H.div
+    [ A.class <| "mask " ++ menuStateClass model
+    , A.id "mask"
+    ]
+    []
+
+
+menuStateClass : Model -> String
+menuStateClass model =
+  case model.menuState of
+    Model.MenuOn ->
+      "active"
+
+    Model.MenuOff ->
+      ""
+
+
+topbar : Address Update.Action -> Model -> Html
+topbar address model =
+  let
+    item content =
+      H.div
+        [ A.class "top-bar-item" ]
+        content
+
+    button =
+      H.a
+        [ A.href "#"
+        , E.onClick address <| Update.SetMenuState Model.MenuOn
+        ]
+        [ hamburger ]
+
+    hamburger =
+      H.i [ A.class "fa fa-bars" ] []
+  in
+    H.div
+      [ A.id "top-bar" ]
+      [ item [ button ]
+      ]
 
 
 troopSelection : Address Update.Action
@@ -126,44 +279,6 @@ nowrapText =
     ]
 
 
-troopMenu : Address Update.Action -> C.Credentials -> Html
-troopMenu address credentials =
-  H.ul
-    [ A.class "menu vertical" ]
-    <| List.map (troopMenuItem address) credentials.users
-
-
-troopMenuItem : Address Update.Action -> C.User -> Html
-troopMenuItem address user =
-  H.li
-    []
-    [ H.a
-      [ A.href "#"
-      , E.onClick address <| Update.LoadPhotoAlbums user
-      ]
-      [ H.text user.troop ]
-    ]
-
-
-albumMenu : Address Update.Action -> Model -> Html
-albumMenu address model =
-  H.ul
-    [ A.class "menu vertical" ]
-    <| List.map (albumMenuItem address model.currentAlbum) model.photoAlbums
-
-
-albumMenuItem : Address Update.Action -> Maybe PhotoAlbum -> PhotoAlbum -> Html
-albumMenuItem address currentAlbum renderedAlbum =
-  H.li
-    []
-    [ H.a
-        [ A.href "#"
-        , E.onClick address <| Update.CurrentAlbum (Just renderedAlbum)
-        ]
-        [ H.text renderedAlbum.name ]
-    ]
-
-
 content : Address Update.Action
        -> C.TroopTypes
        -> C.Credentials
@@ -184,31 +299,15 @@ albumContent address model =
   case model.currentAlbum of
 
     Nothing ->
-      let troopName =
-        Maybe.map .troop model.user
-          |> Maybe.withDefault ""
-      in
-        H.div
-          [ A.id "gallery" ]
-          [ albumThumbnails address model
-          ]
+      H.div
+        [ A.id "gallery" ]
+        [ albumThumbnails address model
+        ]
 
     Just anAlbum ->
       H.div
         [ A.id "gallery" ]
-        [ H.h1
-          [ A.class "text-center" ]
-          [ H.text anAlbum.name ]
-        , H.h5
-          [ A.class "text-center"
-          , nowrapText
-          ]
-          [ H.text "[ "
-          , downloadAllButton address anAlbum model
-          , H.text " ]"
-          ]
-        , H.br [] []
-        , photoThumbnails address anAlbum model
+        [ photoThumbnails address anAlbum model
         ]
 
 

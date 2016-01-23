@@ -7,7 +7,7 @@ import Credentials as C
 import Effects exposing (Effects)
 import Task exposing (Task)
 
-import PhotoAlbums.Model exposing (Model, PhotoAlbum, Photo)
+import PhotoAlbums.Model as Model exposing (Model, PhotoAlbum, Photo)
 
 import Erl
 import Dict
@@ -16,6 +16,7 @@ import Dict
 type Action
   = LoadPhotoAlbums C.User
   | DisplayPhotoAlbums (Result Error (List PhotoAlbum))
+  | DisplayTroopSelection
   | UpdatePhotoAlbum (Result Error PhotoAlbum)
   | CurrentAlbum (Maybe PhotoAlbum)
   | DownloadPhoto Photo
@@ -23,6 +24,7 @@ type Action
   | DownloadProgress (Float, Photo)
   | DownloadComplete Photo
   | CancelDownload Photo
+  | SetMenuState Model.MenuState
   | Logout
   | NoOp
 
@@ -36,8 +38,13 @@ update action partnerToken model =
     Logout ->
       ( model, logout )
 
+    SetMenuState state ->
+      ( { model | menuState = state }
+      , Effects.none
+      )
+
     CurrentAlbum album ->
-      ( { model | currentAlbum = album }
+      ( { model | currentAlbum = album, menuState = Model.MenuOff }
       , Effects.none
       )
 
@@ -45,6 +52,15 @@ update action partnerToken model =
       ( updateUser (Just user) model
       , loadPhotoAlbums partnerToken user
       )
+
+    DisplayTroopSelection ->
+      let
+        newModel =
+          updateUser Nothing model
+      in
+        ( { newModel | menuState = Model.MenuOff }
+        , Effects.none
+        )
 
     DisplayPhotoAlbums result ->
       case result of
@@ -59,7 +75,8 @@ update action partnerToken model =
 
         Err err ->
           ( { model | errorMessage = Just (networkErrorMessage err) }
-          , Effects.none )
+          , Effects.none
+          )
 
     UpdatePhotoAlbum result ->
       case result of
@@ -137,7 +154,11 @@ update action partnerToken model =
 
 updateUser : Maybe C.User -> Model -> Model
 updateUser user model =
-  { model | user = user, currentAlbum = Nothing }
+  { model
+  | user = user
+  , currentAlbum = Nothing
+  , photoAlbums = []
+  }
 
 {-
 Side effects
@@ -276,7 +297,7 @@ Mailboxes
 
 photoDownloader : Signal.Mailbox Photo
 photoDownloader =
-  Signal.mailbox PhotoAlbums.Model.emptyPhoto
+  Signal.mailbox Model.emptyPhoto
 
 
 albumDownloader : Signal.Mailbox (List Photo)

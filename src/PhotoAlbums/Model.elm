@@ -10,6 +10,7 @@ type alias Model =
   , user : Maybe C.User
   , currentAlbum : Maybe PhotoAlbum
   , photoDownloads : Dict Int Float
+  , menuState : MenuState
   }
 
 
@@ -29,6 +30,11 @@ type alias Photo =
   }
 
 
+type MenuState
+  = MenuOn
+  | MenuOff
+
+
 initialModel : Model
 initialModel =
   { photoAlbums = []
@@ -36,6 +42,7 @@ initialModel =
   , user = Nothing
   , currentAlbum = Nothing
   , photoDownloads = Dict.empty
+  , menuState = MenuOff
   }
 
 
