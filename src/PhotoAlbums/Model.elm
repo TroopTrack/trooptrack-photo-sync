@@ -6,7 +6,6 @@ import Dict exposing (Dict)
 
 type alias Model =
   { photoAlbums : List PhotoAlbum
-  , errorMessage : Maybe String
   , user : Maybe C.User
   , currentAlbum : Maybe PhotoAlbum
   , photoDownloads : Dict Int Float
@@ -38,7 +37,6 @@ type MenuState
 initialModel : Model
 initialModel =
   { photoAlbums = []
-  , errorMessage = Nothing
   , user = Nothing
   , currentAlbum = Nothing
   , photoDownloads = Dict.empty

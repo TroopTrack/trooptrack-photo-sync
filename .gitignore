@@ -3,3 +3,4 @@ node_modules/
 dbs/photo_sync_users/
 npm-debug.log
 .DS_Store
+config.json

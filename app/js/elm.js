@@ -11460,16 +11460,11 @@ Elm.PhotoAlbums.Model.make = function (_elm) {
    var _op = {};
    var emptyPhoto = {photoUrl: "",photoId: 0,path: _U.list([])};
    var MenuOff = {ctor: "MenuOff"};
-   var initialModel = {photoAlbums: _U.list([])
-                      ,errorMessage: $Maybe.Nothing
-                      ,user: $Maybe.Nothing
-                      ,currentAlbum: $Maybe.Nothing
-                      ,photoDownloads: $Dict.empty
-                      ,menuState: MenuOff};
+   var initialModel = {photoAlbums: _U.list([]),user: $Maybe.Nothing,currentAlbum: $Maybe.Nothing,photoDownloads: $Dict.empty,menuState: MenuOff};
    var MenuOn = {ctor: "MenuOn"};
    var Photo = F3(function (a,b,c) {    return {photoUrl: a,photoId: b,path: c};});
    var PhotoAlbum = F5(function (a,b,c,d,e) {    return {name: a,takenOn: b,photoCount: c,photoAlbumId: d,photos: e};});
-   var Model = F6(function (a,b,c,d,e,f) {    return {photoAlbums: a,errorMessage: b,user: c,currentAlbum: d,photoDownloads: e,menuState: f};});
+   var Model = F5(function (a,b,c,d,e) {    return {photoAlbums: a,user: b,currentAlbum: c,photoDownloads: d,menuState: e};});
    return _elm.PhotoAlbums.Model.values = {_op: _op
                                           ,Model: Model
                                           ,PhotoAlbum: PhotoAlbum
@@ -11605,7 +11600,7 @@ Elm.Login.Update.make = function (_elm) {
       ,headers: _U.list([{ctor: "_Tuple2",_0: "X-Partner-Token",_1: model.credentials.partnerToken}
                         ,{ctor: "_Tuple2",_0: "X-Username",_1: model.username}
                         ,{ctor: "_Tuple2",_0: "X-User-Password",_1: model.password}])
-      ,url: "http://trooptrack.dev/api/v1/tokens"
+      ,url: "https://trooptrack.com/api/v1/tokens"
       ,body: $Http.empty}));
    };
    var init = {ctor: "_Tuple2",_0: $Login$Model.initialModel,_1: $Effects.none};
@@ -11684,6 +11679,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $Notifications = Elm.Notifications.make(_elm),
    $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
@@ -11693,7 +11689,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       var _p0 = err;
       switch (_p0.ctor)
       {case "Timeout": return "Having trouble reaching the server";
-         case "NetworkError": return "You don\'t appear to be conencted to the network";
+         case "NetworkError": return "You don\'t appear to be connected to the network";
          case "UnexpectedPayload": return A2($Basics._op["++"],"Received an unexpected result from the server: ",_p0._0);
          default: return A2($Basics._op["++"],
            "Error communicating with the server: ",
@@ -11726,7 +11722,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       $Http.defaultSettings,
       {verb: "GET"
       ,headers: _U.list([{ctor: "_Tuple2",_0: "X-Partner-Token",_1: partnerToken},{ctor: "_Tuple2",_0: "X-User-Token",_1: user.token}])
-      ,url: A2($Basics._op["++"],"http://trooptrack.dev/api/v1/photo_albums/",$Basics.toString(album.photoAlbumId))
+      ,url: A2($Basics._op["++"],"https://trooptrack.com/api/v1/photo_albums/",$Basics.toString(album.photoAlbumId))
       ,body: $Http.empty}));
    });
    var sendPhotoAlbumsRequest = F2(function (partnerToken,user) {
@@ -11736,7 +11732,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       $Http.defaultSettings,
       {verb: "GET"
       ,headers: _U.list([{ctor: "_Tuple2",_0: "X-Partner-Token",_1: partnerToken},{ctor: "_Tuple2",_0: "X-User-Token",_1: user.token}])
-      ,url: "http://trooptrack.dev/api/v1/photo_albums"
+      ,url: "https://trooptrack.com/api/v1/photo_albums"
       ,body: $Http.empty}));
    });
    var updateUser = F2(function (user,model) {    return _U.update(model,{user: user,currentAlbum: $Maybe.Nothing,photoAlbums: _U.list([])});});
@@ -11746,6 +11742,10 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
    };
    var downloadPhoto = function (photo) {    return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,photoDownloader.address,photo)));};
    var logout = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,endSession.address,{ctor: "_Tuple0"})));
+   var errorNotification = function (message) {
+      var notifications = $Notifications.notifications;
+      return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,notifications.address,$Notifications.error(message))));
+   };
    var Logout = {ctor: "Logout"};
    var SetMenuState = function (a) {    return {ctor: "SetMenuState",_0: a};};
    var CancelDownload = function (a) {    return {ctor: "CancelDownload",_0: a};};
@@ -11786,17 +11786,17 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
            if (_p4.ctor === "Ok") {
                  var _p5 = _p4._0;
                  return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{photoAlbums: _p5,errorMessage: $Maybe.Nothing})
+                        ,_0: _U.update(model,{photoAlbums: _p5})
                         ,_1: $Effects.batch(A2($List.map,A2(fetchAlbumDetails,partnerToken,model.user),_p5))};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{errorMessage: $Maybe.Just(networkErrorMessage(_p4._0))}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: model,_1: errorNotification(networkErrorMessage(_p4._0))};
               }
          case "UpdatePhotoAlbum": var _p6 = _p2._0;
            if (_p6.ctor === "Ok") {
                  var updateAlbum = F2(function ($new,old) {    return _U.eq($new.photoAlbumId,old.photoAlbumId) ? $new : old;});
                  return {ctor: "_Tuple2",_0: _U.update(model,{photoAlbums: A2($List.map,updateAlbum(_p6._0),model.photoAlbums)}),_1: $Effects.none};
               } else {
-                 return {ctor: "_Tuple2",_0: _U.update(model,{errorMessage: $Maybe.Just(networkErrorMessage(_p6._0))}),_1: $Effects.none};
+                 return {ctor: "_Tuple2",_0: model,_1: errorNotification(networkErrorMessage(_p6._0))};
               }
          case "DownloadPhoto": var _p7 = _p2._0;
            var downloads = A3($Dict.insert,_p7.photoId,0.0,model.photoDownloads);
@@ -11842,6 +11842,7 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
                                            ,downloadPhoto: downloadPhoto
                                            ,completeDownload: completeDownload
                                            ,logout: logout
+                                           ,errorNotification: errorNotification
                                            ,photoAlbumsDecoder: photoAlbumsDecoder
                                            ,photoAlbumDecoder: photoAlbumDecoder
                                            ,photoDecoder: photoDecoder
@@ -12065,11 +12066,216 @@ Elm.Login.View.make = function (_elm) {
 };
 Elm.PhotoAlbums = Elm.PhotoAlbums || {};
 Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
-Elm.PhotoAlbums.View.make = function (_elm) {
+Elm.PhotoAlbums.View.Helpers = Elm.PhotoAlbums.View.Helpers || {};
+Elm.PhotoAlbums.View.Helpers.make = function (_elm) {
    "use strict";
    _elm.PhotoAlbums = _elm.PhotoAlbums || {};
    _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
-   if (_elm.PhotoAlbums.View.values) return _elm.PhotoAlbums.View.values;
+   _elm.PhotoAlbums.View.Helpers = _elm.PhotoAlbums.View.Helpers || {};
+   if (_elm.PhotoAlbums.View.Helpers.values) return _elm.PhotoAlbums.View.Helpers.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var nowrapText = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "white-space",_1: "nowrap"}
+                                                   ,{ctor: "_Tuple2",_0: "overflow",_1: "hidden"}
+                                                   ,{ctor: "_Tuple2",_0: "text-overflow",_1: "ellipsis"}]));
+   var fontAwesome = function (iconName) {
+      var className = A2($Basics._op["++"],"fa fa-",iconName);
+      return A2($Html.i,_U.list([$Html$Attributes.$class(className)]),_U.list([]));
+   };
+   return _elm.PhotoAlbums.View.Helpers.values = {_op: _op,fontAwesome: fontAwesome,nowrapText: nowrapText};
+};
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
+Elm.PhotoAlbums.View.Menu = Elm.PhotoAlbums.View.Menu || {};
+Elm.PhotoAlbums.View.Menu.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
+   _elm.PhotoAlbums.View.Menu = _elm.PhotoAlbums.View.Menu || {};
+   if (_elm.PhotoAlbums.View.Menu.values) return _elm.PhotoAlbums.View.Menu.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $PhotoAlbums$View$Helpers = Elm.PhotoAlbums.View.Helpers.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var menuStateClass = function (model) {    var _p0 = model.menuState;if (_p0.ctor === "MenuOn") {    return "active";} else {    return "";}};
+   var mask = function (model) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class(A2($Basics._op["++"],"mask ",menuStateClass(model))),$Html$Attributes.id("mask")]),_U.list([]));
+   };
+   var menuItem = F5(function (address,action,icon,text,current) {
+      var $class = current ? "menu-item current" : "menu-item";
+      return A2($Html.li,
+      _U.list([$Html$Attributes.$class($class),$PhotoAlbums$View$Helpers.nowrapText]),
+      _U.list([A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,action),$Html$Attributes.$class("menu-link")]),
+      _U.list([icon,A2($Html.span,_U.list([$Html$Attributes.$class("title")]),_U.list([$Html.text(text)]))]))]));
+   });
+   var albumsMenu = F2(function (address,model) {
+      var isCurrent = function (album) {
+         var _p1 = model.currentAlbum;
+         if (_p1.ctor === "Nothing") {
+               return false;
+            } else {
+               return _U.eq(_p1._0.photoAlbumId,album.photoAlbumId);
+            }
+      };
+      var albumMenuItem = function (album) {
+         return A5(menuItem,
+         address,
+         $PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)),
+         $PhotoAlbums$View$Helpers.fontAwesome("picture-o"),
+         album.name,
+         isCurrent(album));
+      };
+      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu-items")]),A2($List.map,albumMenuItem,model.photoAlbums));
+   });
+   var troopMenu = F2(function (address,model) {
+      var _p2 = model.user;
+      if (_p2.ctor === "Nothing") {
+            return $Html.text("");
+         } else {
+            var isCurrent = function (album) {    var _p3 = album;if (_p3.ctor === "Nothing") {    return true;} else {    return false;}};
+            return A2($Html.ul,
+            _U.list([$Html$Attributes.$class("menu-items")]),
+            _U.list([A5(menuItem,
+            address,
+            $PhotoAlbums$Update.CurrentAlbum($Maybe.Nothing),
+            $PhotoAlbums$View$Helpers.fontAwesome("angle-down"),
+            _p2._0.troop,
+            isCurrent(model.currentAlbum))]));
+         }
+   });
+   var menu = F2(function (address,model) {
+      return A2($Html.nav,
+      _U.list([$Html$Attributes.id("menu"),$Html$Attributes.$class(menuStateClass(model))]),
+      _U.list([A2($Html.ul,
+              _U.list([$Html$Attributes.$class("menu-items")]),
+              _U.list([A5(menuItem,
+                      address,
+                      $PhotoAlbums$Update.SetMenuState($PhotoAlbums$Model.MenuOff),
+                      $PhotoAlbums$View$Helpers.fontAwesome("times"),
+                      "Close Menu",
+                      false)
+                      ,A5(menuItem,address,$PhotoAlbums$Update.Logout,$PhotoAlbums$View$Helpers.fontAwesome("sign-out"),"Sign out",false)
+                      ,A5(menuItem,address,$PhotoAlbums$Update.DisplayTroopSelection,$PhotoAlbums$View$Helpers.fontAwesome("users"),"Troops",false)]))
+              ,A2(troopMenu,address,model)
+              ,A2(albumsMenu,address,model)]));
+   });
+   return _elm.PhotoAlbums.View.Menu.values = {_op: _op
+                                              ,menu: menu
+                                              ,troopMenu: troopMenu
+                                              ,albumsMenu: albumsMenu
+                                              ,menuItem: menuItem
+                                              ,mask: mask
+                                              ,menuStateClass: menuStateClass};
+};
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
+Elm.PhotoAlbums.View.Downloads = Elm.PhotoAlbums.View.Downloads || {};
+Elm.PhotoAlbums.View.Downloads.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
+   _elm.PhotoAlbums.View.Downloads = _elm.PhotoAlbums.View.Downloads || {};
+   if (_elm.PhotoAlbums.View.Downloads.values) return _elm.PhotoAlbums.View.Downloads.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $PhotoAlbums$View$Helpers = Elm.PhotoAlbums.View.Helpers.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var downloadAllButton = F3(function (address,album,model) {
+      var theButton = A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),$Html$Attributes.title("Download All"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadAlbum(album))]),
+      _U.list([$PhotoAlbums$View$Helpers.fontAwesome("download")]));
+      var photoCount = $List.length(album.photos);
+      var isDownloading = function (photo) {    return A2($Dict.member,photo.photoId,model.photoDownloads);};
+      var activeDownloads = A2($List.filter,isDownloading,album.photos);
+      var downloadCount = $List.length(activeDownloads);
+      var progressCount = photoCount - downloadCount;
+      var theProgress = A2($Html.progress,
+      _U.list([$Html$Attributes.max($Basics.toString(photoCount)),$Html$Attributes.value($Basics.toString(progressCount))]),
+      _U.list([]));
+      return _U.cmp($List.length(activeDownloads),0) > 0 ? theProgress : theButton;
+   });
+   return _elm.PhotoAlbums.View.Downloads.values = {_op: _op,downloadAllButton: downloadAllButton};
+};
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
+Elm.PhotoAlbums.View.Topbar = Elm.PhotoAlbums.View.Topbar || {};
+Elm.PhotoAlbums.View.Topbar.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
+   _elm.PhotoAlbums.View.Topbar = _elm.PhotoAlbums.View.Topbar || {};
+   if (_elm.PhotoAlbums.View.Topbar.values) return _elm.PhotoAlbums.View.Topbar.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $PhotoAlbums$View$Downloads = Elm.PhotoAlbums.View.Downloads.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var topbar = F2(function (address,model) {
+      var hamburger = A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-bars")]),_U.list([]));
+      var button = A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.SetMenuState($PhotoAlbums$Model.MenuOn))]),
+      _U.list([hamburger]));
+      var item = function (content) {    return A2($Html.div,_U.list([$Html$Attributes.$class("top-bar-item")]),content);};
+      var download = function () {
+         var _p0 = model.currentAlbum;
+         if (_p0.ctor === "Nothing") {
+               return $Html.text("");
+            } else {
+               return item(_U.list([A3($PhotoAlbums$View$Downloads.downloadAllButton,address,_p0._0,model)]));
+            }
+      }();
+      return A2($Html.div,_U.list([$Html$Attributes.id("top-bar")]),_U.list([item(_U.list([button])),download]));
+   });
+   return _elm.PhotoAlbums.View.Topbar.values = {_op: _op,topbar: topbar};
+};
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
+Elm.PhotoAlbums.View.Gallery = Elm.PhotoAlbums.View.Gallery || {};
+Elm.PhotoAlbums.View.Gallery.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
+   _elm.PhotoAlbums.View.Gallery = _elm.PhotoAlbums.View.Gallery || {};
+   if (_elm.PhotoAlbums.View.Gallery.values) return _elm.PhotoAlbums.View.Gallery.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Credentials = Elm.Credentials.make(_elm),
@@ -12082,46 +12288,21 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $PhotoAlbums$View$Helpers = Elm.PhotoAlbums.View.Helpers.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $String = Elm.String.make(_elm);
+   $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var downloadAllButton = F3(function (address,album,model) {
-      var theButton = A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadAlbum(album))]),
-      _U.list([$Html.text("Download All")]));
-      var isDownloading = function (photo) {    return A2($Dict.member,photo.photoId,model.photoDownloads);};
-      var activeDownloads = A2($List.filter,isDownloading,album.photos);
-      var theMessage = $Html.text($String.concat(_U.list(["Downloading "
-                                                         ,$Basics.toString($List.length(activeDownloads))
-                                                         ," of "
-                                                         ,$Basics.toString($List.length(album.photos))])));
-      return _U.cmp($List.length(activeDownloads),0) > 0 ? theMessage : theButton;
-   });
-   var albumName = function (album) {    return A2($Basics._op["++"],album.name,A2($Basics._op["++"]," (",A2($Basics._op["++"],album.takenOn,")")));};
-   var nowrapText = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "white-space",_1: "nowrap"}
-                                                   ,{ctor: "_Tuple2",_0: "overflow",_1: "hidden"}
-                                                   ,{ctor: "_Tuple2",_0: "text-overflow",_1: "ellipsis"}]));
-   var albumThumbnail = F2(function (address,album) {
-      var photoUrl = A2($Maybe.withDefault,"http://placehold.it/550x550",A2($Maybe.map,function (_) {    return _.photoUrl;},$List.head(album.photos)));
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("gallery-item")]),
-      _U.list([A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)))]),
-      _U.list([A2($Html.h5,_U.list([nowrapText]),_U.list([$Html.text(albumName(album))]))
-              ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photoUrl)]),_U.list([]))]))]));
-   });
-   var albumThumbnails = F2(function (address,model) {
-      return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,albumThumbnail(address),model.photoAlbums));
-   });
    var photoThumbnail = F3(function (address,model,photo) {
+      var downloadButtonStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "font-size",_1: "1.2em"},{ctor: "_Tuple2",_0: "padding",_1: "10px"}]));
       var maybeDownload = A2($Dict.get,photo.photoId,model.photoDownloads);
       var downloadButton = function () {
          var _p0 = maybeDownload;
          if (_p0.ctor === "Nothing") {
                return A2($Html.a,
-               _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadPhoto(photo))]),
-               _U.list([$Html.text("Download")]));
+               _U.list([$Html$Attributes.href("#")
+                       ,$Html$Attributes.title("Download Photo")
+                       ,A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadPhoto(photo))]),
+               _U.list([$PhotoAlbums$View$Helpers.fontAwesome("download")]));
             } else {
                return A2($Html.progress,_U.list([$Html$Attributes.max("1"),$Html$Attributes.value($Basics.toString(_p0._0))]),_U.list([]));
             }
@@ -12129,12 +12310,25 @@ Elm.PhotoAlbums.View.make = function (_elm) {
       var photoName = A2($Maybe.withDefault,"{ Unnamed }",$List.head($List.reverse(photo.path)));
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("gallery-item")]),
-      _U.list([A2($Html.h6,_U.list([nowrapText]),_U.list([$Html.text(photoName)]))
+      _U.list([A2($Html.h6,_U.list([$PhotoAlbums$View$Helpers.nowrapText]),_U.list([$Html.text(photoName)]))
               ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photo.photoUrl),$Html$Attributes.title(photoName)]),_U.list([]))
-              ,A2($Html.div,_U.list([]),_U.list([A2($Html.h6,_U.list([nowrapText]),_U.list([$Html.text("[ "),downloadButton,$Html.text(" ]")]))]))]));
+              ,A2($Html.div,_U.list([downloadButtonStyle]),_U.list([downloadButton]))]));
    });
    var photoThumbnails = F3(function (address,album,model) {
       return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,A2(photoThumbnail,address,model),album.photos));
+   });
+   var albumName = function (album) {    return A2($Basics._op["++"],album.name,A2($Basics._op["++"]," (",A2($Basics._op["++"],album.takenOn,")")));};
+   var albumThumbnail = F2(function (address,album) {
+      var photoUrl = A2($Maybe.withDefault,"http://placehold.it/550x550",A2($Maybe.map,function (_) {    return _.photoUrl;},$List.head(album.photos)));
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("gallery-item")]),
+      _U.list([A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)))]),
+      _U.list([A2($Html.h5,_U.list([$PhotoAlbums$View$Helpers.nowrapText]),_U.list([$Html.text(albumName(album))]))
+              ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photoUrl)]),_U.list([]))]))]));
+   });
+   var albumThumbnails = F2(function (address,model) {
+      return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,albumThumbnail(address),model.photoAlbums));
    });
    var albumContent = F2(function (address,model) {
       var _p1 = model.currentAlbum;
@@ -12185,101 +12379,50 @@ Elm.PhotoAlbums.View.make = function (_elm) {
             return A2(albumContent,address,model);
          }
    });
-   var topbar = F2(function (address,model) {
-      var hamburger = A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-bars")]),_U.list([]));
-      var button = A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.SetMenuState($PhotoAlbums$Model.MenuOn))]),
-      _U.list([hamburger]));
-      var item = function (content) {    return A2($Html.div,_U.list([$Html$Attributes.$class("top-bar-item")]),content);};
-      return A2($Html.div,_U.list([$Html$Attributes.id("top-bar")]),_U.list([item(_U.list([button]))]));
-   });
-   var menuStateClass = function (model) {    var _p4 = model.menuState;if (_p4.ctor === "MenuOn") {    return "active";} else {    return "";}};
-   var mask = function (model) {
-      return A2($Html.div,_U.list([$Html$Attributes.$class(A2($Basics._op["++"],"mask ",menuStateClass(model))),$Html$Attributes.id("mask")]),_U.list([]));
-   };
-   var fontAwesome = function (iconName) {
-      var className = A2($Basics._op["++"],"fa fa-",iconName);
-      return A2($Html.i,_U.list([$Html$Attributes.$class(className)]),_U.list([]));
-   };
-   var menuItem = F5(function (address,action,icon,text,current) {
-      var $class = current ? "menu-item current" : "menu-item";
-      return A2($Html.li,
-      _U.list([$Html$Attributes.$class($class),nowrapText]),
-      _U.list([A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,action),$Html$Attributes.$class("menu-link")]),
-      _U.list([icon,A2($Html.span,_U.list([$Html$Attributes.$class("title")]),_U.list([$Html.text(text)]))]))]));
-   });
-   var albumsMenu = F2(function (address,model) {
-      var isCurrent = function (album) {
-         var _p5 = model.currentAlbum;
-         if (_p5.ctor === "Nothing") {
-               return false;
-            } else {
-               return _U.eq(_p5._0.photoAlbumId,album.photoAlbumId);
-            }
-      };
-      var albumMenuItem = function (album) {
-         return A5(menuItem,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)),fontAwesome("picture-o"),album.name,isCurrent(album));
-      };
-      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu-items")]),A2($List.map,albumMenuItem,model.photoAlbums));
-   });
-   var troopMenu = F2(function (address,model) {
-      var _p6 = model.user;
-      if (_p6.ctor === "Nothing") {
-            return $Html.text("");
-         } else {
-            var isCurrent = function (album) {    var _p7 = album;if (_p7.ctor === "Nothing") {    return true;} else {    return false;}};
-            return A2($Html.ul,
-            _U.list([$Html$Attributes.$class("menu-items")]),
-            _U.list([A5(menuItem,
-            address,
-            $PhotoAlbums$Update.CurrentAlbum($Maybe.Nothing),
-            fontAwesome("angle-down"),
-            _p6._0.troop,
-            isCurrent(model.currentAlbum))]));
-         }
-   });
-   var menu = F2(function (address,model) {
-      return A2($Html.nav,
-      _U.list([$Html$Attributes.id("menu"),$Html$Attributes.$class(menuStateClass(model))]),
-      _U.list([A2($Html.ul,
-              _U.list([$Html$Attributes.$class("menu-items")]),
-              _U.list([A5(menuItem,address,$PhotoAlbums$Update.SetMenuState($PhotoAlbums$Model.MenuOff),fontAwesome("times"),"Close Menu",false)
-                      ,A5(menuItem,address,$PhotoAlbums$Update.Logout,fontAwesome("sign-out"),"Sign out",false)
-                      ,A5(menuItem,address,$PhotoAlbums$Update.DisplayTroopSelection,fontAwesome("users"),"Troops",false)]))
-              ,A2(troopMenu,address,model)
-              ,A2(albumsMenu,address,model)]));
-   });
+   return _elm.PhotoAlbums.View.Gallery.values = {_op: _op
+                                                 ,content: content
+                                                 ,troopSelection: troopSelection
+                                                 ,troopThumb: troopThumb
+                                                 ,troopImage: troopImage
+                                                 ,albumContent: albumContent
+                                                 ,albumName: albumName
+                                                 ,albumThumbnails: albumThumbnails
+                                                 ,albumThumbnail: albumThumbnail
+                                                 ,photoThumbnails: photoThumbnails
+                                                 ,photoThumbnail: photoThumbnail};
+};
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
+Elm.PhotoAlbums.View.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
+   if (_elm.PhotoAlbums.View.values) return _elm.PhotoAlbums.View.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Credentials = Elm.Credentials.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $PhotoAlbums$View$Gallery = Elm.PhotoAlbums.View.Gallery.make(_elm),
+   $PhotoAlbums$View$Menu = Elm.PhotoAlbums.View.Menu.make(_elm),
+   $PhotoAlbums$View$Topbar = Elm.PhotoAlbums.View.Topbar.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
    var view = F4(function (address,troopTypes,credentials,model) {
       return A2($Html.div,
       _U.list([]),
-      _U.list([A2(topbar,address,model)
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),_U.list([A4(content,address,troopTypes,credentials,model)]))
-              ,A2(menu,address,model)
-              ,mask(model)]));
+      _U.list([A2($PhotoAlbums$View$Topbar.topbar,address,model)
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),_U.list([A4($PhotoAlbums$View$Gallery.content,address,troopTypes,credentials,model)]))
+              ,A2($PhotoAlbums$View$Menu.menu,address,model)
+              ,$PhotoAlbums$View$Menu.mask(model)]));
    });
-   return _elm.PhotoAlbums.View.values = {_op: _op
-                                         ,view: view
-                                         ,menu: menu
-                                         ,troopMenu: troopMenu
-                                         ,albumsMenu: albumsMenu
-                                         ,menuItem: menuItem
-                                         ,fontAwesome: fontAwesome
-                                         ,mask: mask
-                                         ,menuStateClass: menuStateClass
-                                         ,topbar: topbar
-                                         ,troopSelection: troopSelection
-                                         ,troopThumb: troopThumb
-                                         ,troopImage: troopImage
-                                         ,nowrapText: nowrapText
-                                         ,content: content
-                                         ,albumContent: albumContent
-                                         ,albumThumbnails: albumThumbnails
-                                         ,albumThumbnail: albumThumbnail
-                                         ,albumName: albumName
-                                         ,downloadAllButton: downloadAllButton
-                                         ,photoThumbnails: photoThumbnails
-                                         ,photoThumbnail: photoThumbnail};
+   return _elm.PhotoAlbums.View.values = {_op: _op,view: view};
 };
 Elm.Loading = Elm.Loading || {};
 Elm.Loading.View = Elm.Loading.View || {};

@@ -3,10 +3,11 @@ module PhotoAlbums.Update where
 import Http exposing (Error(..))
 import Json.Decode as Json exposing ((:=))
 
-import Credentials as C
 import Effects exposing (Effects)
 import Task exposing (Task)
 
+import Credentials as C
+import Notifications
 import PhotoAlbums.Model as Model exposing (Model, PhotoAlbum, Photo)
 
 import Erl
@@ -65,17 +66,14 @@ update action partnerToken model =
     DisplayPhotoAlbums result ->
       case result of
         Ok albums ->
-          ( { model
-            | photoAlbums = albums
-            , errorMessage = Nothing
-            }
+          ( { model | photoAlbums = albums }
           , Effects.batch
-              <| List.map (fetchAlbumDetails partnerToken model.user) albums
+            <| List.map (fetchAlbumDetails partnerToken model.user) albums
           )
 
         Err err ->
-          ( { model | errorMessage = Just (networkErrorMessage err) }
-          , Effects.none
+          ( model
+          , errorNotification <| networkErrorMessage err
           )
 
     UpdatePhotoAlbum result ->
@@ -93,8 +91,8 @@ update action partnerToken model =
 
         Err err ->
           -- TODO: might want to associate an error with a particular album
-          ( { model | errorMessage = Just (networkErrorMessage err) }
-          , Effects.none
+          ( model
+          , errorNotification <| networkErrorMessage err
           )
 
     DownloadPhoto photo ->
@@ -182,7 +180,7 @@ sendPhotoAlbumsRequest partnerToken user =
             [ ("X-Partner-Token", partnerToken)
             , ("X-User-Token", user.token)
             ]
-        , url = "http://trooptrack.dev/api/v1/photo_albums"
+        , url = "https://trooptrack.com/api/v1/photo_albums"
         , body = Http.empty
         }
 
@@ -212,7 +210,7 @@ sendPhotoAlbumDetailsRequest partnerToken user album =
             [ ("X-Partner-Token", partnerToken)
             , ("X-User-Token", user.token)
             ]
-        , url = "http://trooptrack.dev/api/v1/photo_albums/" ++ toString album.photoAlbumId
+        , url = "https://trooptrack.com/api/v1/photo_albums/" ++ toString album.photoAlbumId
         , body = Http.empty
         }
 
@@ -243,6 +241,18 @@ logout =
   Signal.send endSession.address ()
     |> Effects.task
     |> Effects.map (always NoOp)
+
+
+errorNotification : String -> Effects Action
+errorNotification message =
+  let
+    notifications = Notifications.notifications
+  in
+    Notifications.error message
+      |> Signal.send notifications.address
+      |> Effects.task
+      |> Effects.map (always NoOp)
+
 
 {-
 Decoders
@@ -323,7 +333,7 @@ networkErrorMessage err =
       "Having trouble reaching the server"
 
     NetworkError ->
-      "You don't appear to be conencted to the network"
+      "You don't appear to be connected to the network"
 
     UnexpectedPayload msg ->
       "Received an unexpected result from the server: " ++ msg
