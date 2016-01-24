@@ -7,7 +7,7 @@ import Signal exposing (Address)
 
 import PhotoAlbums.Update as Update
 import PhotoAlbums.Model as Model exposing (Model)
-import PhotoAlbums.View.Downloads exposing (downloadAllButton)
+import PhotoAlbums.View.Downloads exposing (downloadAlbumButton)
 
 topbar : Address Update.Action -> Model -> Html
 topbar address model =
@@ -29,7 +29,7 @@ topbar address model =
         Nothing -> H.text ""
 
         Just album ->
-          item [ downloadAllButton address album model ]
+          item [ downloadAlbumButton address album model ]
 
     hamburger =
       H.i [ A.class "fa fa-bars" ] []

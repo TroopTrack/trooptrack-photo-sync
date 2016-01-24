@@ -178,6 +178,23 @@ a {
   #menu .menu-link .title {
     padding: 10px;
   }
+  #menu .menu-link .album-icon {
+    position: absolute;
+    line-height: 1.5em;
+    vertical-align: center;
+    text-align: center;
+  }
+  #menu .menu-link .name {
+    font-weight: normal;
+    font-size: 0.75em;
+    margin-left: 2.5em;
+    text-transform: uppercase;
+  }
+  #menu .menu-link .count {
+    font-weight: normal;
+    font-size: 0.75em;
+    margin-left: 2.5em;
+  }
 
   @media all and (min-width: 320px) {
     #menu {

@@ -1,6 +1,5 @@
 module PhotoAlbums.View.Downloads where
 
-
 import Html as H exposing (Html)
 import Html.Attributes as A
 import Html.Events as E
@@ -12,23 +11,17 @@ import PhotoAlbums.Update as Update
 import PhotoAlbums.Model as Model exposing (Model, PhotoAlbum)
 import PhotoAlbums.View.Helpers exposing (fontAwesome)
 
-downloadAllButton : Address Update.Action -> PhotoAlbum -> Model -> Html
-downloadAllButton address album model =
+downloadAlbumButton : Address Update.Action -> PhotoAlbum -> Model -> Html
+downloadAlbumButton address album model =
   let
-    isDownloading photo =
-      Dict.member photo.photoId model.photoDownloads
-
-    activeDownloads =
-      List.filter isDownloading album.photos
-
     photoCount =
-      List.length album.photos
+      albumPhotoCount album
 
-    downloadCount =
-      List.length activeDownloads
+    downloads =
+      downloadCount album model
 
     progressCount =
-      photoCount - downloadCount
+      photoCount - downloads
 
     theButton =
       H.a
@@ -47,6 +40,23 @@ downloadAllButton address album model =
         []
 
   in
-    if List.length activeDownloads > 0
+    if downloads > 0
       then theProgress
       else theButton
+
+
+albumPhotoCount : PhotoAlbum -> Int
+albumPhotoCount album =
+  List.length album.photos
+
+
+downloadCount : PhotoAlbum -> Model -> Int
+downloadCount album model =
+  let
+    isDownloading photo =
+      Dict.member photo.photoId model.photoDownloads
+
+    activeDownloads =
+      List.filter isDownloading album.photos
+  in
+    List.length activeDownloads

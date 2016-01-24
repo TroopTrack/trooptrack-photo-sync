@@ -29,6 +29,7 @@ type Action
   | Logout
   | NoOp
 
+
 update : Action -> String -> Model -> (Model, Effects Action)
 update action partnerToken model =
   case action of

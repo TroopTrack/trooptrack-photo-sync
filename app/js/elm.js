@@ -12094,6 +12094,53 @@ Elm.PhotoAlbums.View.Helpers.make = function (_elm) {
 };
 Elm.PhotoAlbums = Elm.PhotoAlbums || {};
 Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
+Elm.PhotoAlbums.View.Downloads = Elm.PhotoAlbums.View.Downloads || {};
+Elm.PhotoAlbums.View.Downloads.make = function (_elm) {
+   "use strict";
+   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
+   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
+   _elm.PhotoAlbums.View.Downloads = _elm.PhotoAlbums.View.Downloads || {};
+   if (_elm.PhotoAlbums.View.Downloads.values) return _elm.PhotoAlbums.View.Downloads.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Dict = Elm.Dict.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $PhotoAlbums$View$Helpers = Elm.PhotoAlbums.View.Helpers.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var downloadCount = F2(function (album,model) {
+      var isDownloading = function (photo) {    return A2($Dict.member,photo.photoId,model.photoDownloads);};
+      var activeDownloads = A2($List.filter,isDownloading,album.photos);
+      return $List.length(activeDownloads);
+   });
+   var albumPhotoCount = function (album) {    return $List.length(album.photos);};
+   var downloadAlbumButton = F3(function (address,album,model) {
+      var theButton = A2($Html.a,
+      _U.list([$Html$Attributes.href("#"),$Html$Attributes.title("Download All"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadAlbum(album))]),
+      _U.list([$PhotoAlbums$View$Helpers.fontAwesome("download")]));
+      var downloads = A2(downloadCount,album,model);
+      var photoCount = albumPhotoCount(album);
+      var progressCount = photoCount - downloads;
+      var theProgress = A2($Html.progress,
+      _U.list([$Html$Attributes.max($Basics.toString(photoCount)),$Html$Attributes.value($Basics.toString(progressCount))]),
+      _U.list([]));
+      return _U.cmp(downloads,0) > 0 ? theProgress : theButton;
+   });
+   return _elm.PhotoAlbums.View.Downloads.values = {_op: _op
+                                                   ,downloadAlbumButton: downloadAlbumButton
+                                                   ,albumPhotoCount: albumPhotoCount
+                                                   ,downloadCount: downloadCount};
+};
+Elm.PhotoAlbums = Elm.PhotoAlbums || {};
+Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
 Elm.PhotoAlbums.View.Menu = Elm.PhotoAlbums.View.Menu || {};
 Elm.PhotoAlbums.View.Menu.make = function (_elm) {
    "use strict";
@@ -12111,6 +12158,7 @@ Elm.PhotoAlbums.View.Menu.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
    $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $PhotoAlbums$View$Downloads = Elm.PhotoAlbums.View.Downloads.make(_elm),
    $PhotoAlbums$View$Helpers = Elm.PhotoAlbums.View.Helpers.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
@@ -12119,6 +12167,23 @@ Elm.PhotoAlbums.View.Menu.make = function (_elm) {
    var mask = function (model) {
       return A2($Html.div,_U.list([$Html$Attributes.$class(A2($Basics._op["++"],"mask ",menuStateClass(model))),$Html$Attributes.id("mask")]),_U.list([]));
    };
+   var albumMenuItem = F4(function (address,current,model,album) {
+      var downloads = A2($PhotoAlbums$View$Downloads.downloadCount,album,model);
+      var totalCount = $PhotoAlbums$View$Downloads.albumPhotoCount(album);
+      var totalPhotos = A2($Basics._op["++"],$Basics.toString(totalCount)," photos");
+      var downloadingMessage = A2($Basics._op["++"],"Downloading ",A2($Basics._op["++"],$Basics.toString(downloads),A2($Basics._op["++"]," of ",totalPhotos)));
+      var photoCount = _U.cmp(downloads,0) > 0 ? downloadingMessage : totalPhotos;
+      var $class = current ? "menu-item current" : "menu-item";
+      return A2($Html.li,
+      _U.list([$Html$Attributes.$class($class),$PhotoAlbums$View$Helpers.nowrapText]),
+      _U.list([A2($Html.a,
+      _U.list([$Html$Attributes.href("#")
+              ,A2($Html$Events.onClick,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)))
+              ,$Html$Attributes.$class("menu-link")]),
+      _U.list([A2($Html.span,_U.list([$Html$Attributes.$class("album-icon")]),_U.list([$PhotoAlbums$View$Helpers.fontAwesome("picture-o")]))
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("name")]),_U.list([$Html.text(album.name)]))
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("count")]),_U.list([$Html.text(photoCount)]))]))]));
+   });
    var menuItem = F5(function (address,action,icon,text,current) {
       var $class = current ? "menu-item current" : "menu-item";
       return A2($Html.li,
@@ -12136,15 +12201,8 @@ Elm.PhotoAlbums.View.Menu.make = function (_elm) {
                return _U.eq(_p1._0.photoAlbumId,album.photoAlbumId);
             }
       };
-      var albumMenuItem = function (album) {
-         return A5(menuItem,
-         address,
-         $PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)),
-         $PhotoAlbums$View$Helpers.fontAwesome("picture-o"),
-         album.name,
-         isCurrent(album));
-      };
-      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu-items")]),A2($List.map,albumMenuItem,model.photoAlbums));
+      var item = function (album) {    return A4(albumMenuItem,address,isCurrent(album),model,album);};
+      return A2($Html.ul,_U.list([$Html$Attributes.$class("menu-items")]),A2($List.map,item,model.photoAlbums));
    });
    var troopMenu = F2(function (address,model) {
       var _p2 = model.user;
@@ -12183,48 +12241,9 @@ Elm.PhotoAlbums.View.Menu.make = function (_elm) {
                                               ,troopMenu: troopMenu
                                               ,albumsMenu: albumsMenu
                                               ,menuItem: menuItem
+                                              ,albumMenuItem: albumMenuItem
                                               ,mask: mask
                                               ,menuStateClass: menuStateClass};
-};
-Elm.PhotoAlbums = Elm.PhotoAlbums || {};
-Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
-Elm.PhotoAlbums.View.Downloads = Elm.PhotoAlbums.View.Downloads || {};
-Elm.PhotoAlbums.View.Downloads.make = function (_elm) {
-   "use strict";
-   _elm.PhotoAlbums = _elm.PhotoAlbums || {};
-   _elm.PhotoAlbums.View = _elm.PhotoAlbums.View || {};
-   _elm.PhotoAlbums.View.Downloads = _elm.PhotoAlbums.View.Downloads || {};
-   if (_elm.PhotoAlbums.View.Downloads.values) return _elm.PhotoAlbums.View.Downloads.values;
-   var _U = Elm.Native.Utils.make(_elm),
-   $Basics = Elm.Basics.make(_elm),
-   $Debug = Elm.Debug.make(_elm),
-   $Dict = Elm.Dict.make(_elm),
-   $Html = Elm.Html.make(_elm),
-   $Html$Attributes = Elm.Html.Attributes.make(_elm),
-   $Html$Events = Elm.Html.Events.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
-   $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
-   $PhotoAlbums$View$Helpers = Elm.PhotoAlbums.View.Helpers.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
-   var _op = {};
-   var downloadAllButton = F3(function (address,album,model) {
-      var theButton = A2($Html.a,
-      _U.list([$Html$Attributes.href("#"),$Html$Attributes.title("Download All"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.DownloadAlbum(album))]),
-      _U.list([$PhotoAlbums$View$Helpers.fontAwesome("download")]));
-      var photoCount = $List.length(album.photos);
-      var isDownloading = function (photo) {    return A2($Dict.member,photo.photoId,model.photoDownloads);};
-      var activeDownloads = A2($List.filter,isDownloading,album.photos);
-      var downloadCount = $List.length(activeDownloads);
-      var progressCount = photoCount - downloadCount;
-      var theProgress = A2($Html.progress,
-      _U.list([$Html$Attributes.max($Basics.toString(photoCount)),$Html$Attributes.value($Basics.toString(progressCount))]),
-      _U.list([]));
-      return _U.cmp($List.length(activeDownloads),0) > 0 ? theProgress : theButton;
-   });
-   return _elm.PhotoAlbums.View.Downloads.values = {_op: _op,downloadAllButton: downloadAllButton};
 };
 Elm.PhotoAlbums = Elm.PhotoAlbums || {};
 Elm.PhotoAlbums.View = Elm.PhotoAlbums.View || {};
@@ -12260,7 +12279,7 @@ Elm.PhotoAlbums.View.Topbar.make = function (_elm) {
          if (_p0.ctor === "Nothing") {
                return $Html.text("");
             } else {
-               return item(_U.list([A3($PhotoAlbums$View$Downloads.downloadAllButton,address,_p0._0,model)]));
+               return item(_U.list([A3($PhotoAlbums$View$Downloads.downloadAlbumButton,address,_p0._0,model)]));
             }
       }();
       return A2($Html.div,_U.list([$Html$Attributes.id("top-bar")]),_U.list([item(_U.list([button])),download]));
