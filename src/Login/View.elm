@@ -4,7 +4,7 @@ import Signal exposing (Address)
 
 import Html as H exposing (Html, Attribute)
 import Html.Attributes as A
-import Html.Events exposing (on, targetValue, onClick)
+import Html.Events as E exposing (on, targetValue, onClick)
 
 import Layouts
 
@@ -32,8 +32,8 @@ viewContent address model =
         , A.value model.password
         ]
     , submitButton address model
-    , forgotPassword
-    , termsOfService
+    , forgotPassword address
+    , termsOfService address
     ]
 
 
@@ -87,36 +87,50 @@ submitButton address model =
       ]
 
 
-forgotPassword : Html
-forgotPassword =
-  H.p []
-    [ H.a
-      [ A.href "https://trooptrack.com/password_resets/new"
+forgotPassword : Address Action -> Html
+forgotPassword address =
+  let
+    usernameUrl = "https://trooptrack.com/forgot_user_names/new"
+    passwordUrl = "https://trooptrack.com/password_resets/new"
+  in
+    H.p []
+      [ H.a
+        [ A.href "#"
+        , E.onClick address <| OpenExternal passwordUrl
+        ]
+        [ H.text "Forgot your password?" ]
+      , H.text "|"
+      , H.a
+        [ A.href "#"
+        , E.onClick address <| OpenExternal usernameUrl
+        ]
+        [ H.text "Forgot your username?" ]
       ]
-      [ H.text "Forgot your password?" ]
-    , H.text "|"
-    , H.a
-      [ A.href "https://trooptrack.com/forgot_user_names/new"
-      ]
-      [ H.text "Forgot your username?" ]
-    ]
 
-termsOfService : Html
-termsOfService =
-  H.div []
-    [ H.text "Use of this site constitutes acceptance of our"
-    , H.br [] []
-    , H.a
-      [ A.href "https://trooptrack.com/terms_of_service" ]
-      [ H.text "Terms of Service" ]
-    , H.text " and "
-    , H.a
-      [ A.href "https://trooptrack.com/privacy" ]
-      [ H.text "Privacy Policy" ]
-    , H.br [] []
-    , H.br [] []
-    , H.text "© 2008 - 2016 TroopTrack LLC."
-    ]
+termsOfService : Address Action -> Html
+termsOfService address =
+  let
+    termsOfService = "https://trooptrack.com/terms_of_service"
+    privacy = "https://trooptrack.com/privacy"
+  in
+    H.div []
+      [ H.text "Use of this site constitutes acceptance of our"
+      , H.br [] []
+      , H.a
+        [ A.href "#"
+        , E.onClick address <| OpenExternal termsOfService
+        ]
+        [ H.text "Terms of Service" ]
+      , H.text " and "
+      , H.a
+        [ A.href "#"
+        , E.onClick address <| OpenExternal privacy
+        ]
+        [ H.text "Privacy Policy" ]
+      , H.br [] []
+      , H.br [] []
+      , H.text "© 2008 - 2016 TroopTrack LLC."
+      ]
 
 
 toMessage : Address action -> (b -> action) -> b -> Signal.Message

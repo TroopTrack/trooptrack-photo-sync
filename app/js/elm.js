@@ -11542,6 +11542,24 @@ Elm.Notifications.make = function (_elm) {
    var error = Notification("error");
    return _elm.Notifications.values = {_op: _op,Notification: Notification,empty: empty,error: error,notifications: notifications};
 };
+Elm.External = Elm.External || {};
+Elm.External.make = function (_elm) {
+   "use strict";
+   _elm.External = _elm.External || {};
+   if (_elm.External.values) return _elm.External.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var openExternal = $Signal.mailbox("");
+   var open = function (url) {    return A2($Signal.send,openExternal.address,url);};
+   return _elm.External.values = {_op: _op,open: open,openExternal: openExternal};
+};
 Elm.Login = Elm.Login || {};
 Elm.Login.Update = Elm.Login.Update || {};
 Elm.Login.Update.make = function (_elm) {
@@ -11554,6 +11572,7 @@ Elm.Login.Update.make = function (_elm) {
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
+   $External = Elm.External.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
@@ -11591,6 +11610,7 @@ Elm.Login.Update.make = function (_elm) {
    };
    var init = {ctor: "_Tuple2",_0: $Login$Model.initialModel,_1: $Effects.none};
    var NoOp = {ctor: "NoOp"};
+   var openExteral = function (url) {    return A2($Effects.map,$Basics.always(NoOp),$Effects.task($External.open(url)));};
    var storeCurrentUser = function (credentials) {
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,storeUsersBox.address,credentials)));
    };
@@ -11598,6 +11618,7 @@ Elm.Login.Update.make = function (_elm) {
       var notifications = $Notifications.notifications;
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,notifications.address,$Notifications.error(message))));
    };
+   var OpenExternal = function (a) {    return {ctor: "OpenExternal",_0: a};};
    var UserToken = function (a) {    return {ctor: "UserToken",_0: a};};
    var authenticate = function (model) {    return $Effects.task(A2($Task.map,UserToken,$Task.toResult(sendAuthRequest(model))));};
    var update = F2(function (action,model) {
@@ -11607,6 +11628,7 @@ Elm.Login.Update.make = function (_elm) {
          case "Username": return {ctor: "_Tuple2",_0: _U.update(model,{username: _p0._0}),_1: $Effects.none};
          case "Password": return {ctor: "_Tuple2",_0: _U.update(model,{password: _p0._0}),_1: $Effects.none};
          case "Authenticate": return {ctor: "_Tuple2",_0: _U.update(model,{authenticating: true}),_1: authenticate(model)};
+         case "OpenExternal": return {ctor: "_Tuple2",_0: model,_1: openExteral(_p0._0)};
          default: var _p1 = _p0._0;
            if (_p1.ctor === "Ok") {
                  var oldCredentials = model.credentials;
@@ -11630,9 +11652,11 @@ Elm.Login.Update.make = function (_elm) {
                                      ,Password: Password
                                      ,Authenticate: Authenticate
                                      ,UserToken: UserToken
+                                     ,OpenExternal: OpenExternal
                                      ,NoOp: NoOp
                                      ,init: init
                                      ,update: update
+                                     ,openExteral: openExteral
                                      ,authenticate: authenticate
                                      ,sendAuthRequest: sendAuthRequest
                                      ,storeCurrentUser: storeCurrentUser
@@ -11949,21 +11973,37 @@ Elm.Login.View.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var toMessage = F3(function (address,toAction,val) {    return A2($Signal.message,address,toAction(val));});
-   var termsOfService = A2($Html.div,
-   _U.list([]),
-   _U.list([$Html.text("Use of this site constitutes acceptance of our")
-           ,A2($Html.br,_U.list([]),_U.list([]))
-           ,A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/terms_of_service")]),_U.list([$Html.text("Terms of Service")]))
-           ,$Html.text(" and ")
-           ,A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/privacy")]),_U.list([$Html.text("Privacy Policy")]))
-           ,A2($Html.br,_U.list([]),_U.list([]))
-           ,A2($Html.br,_U.list([]),_U.list([]))
-           ,$Html.text("© 2008 - 2016 TroopTrack LLC.")]));
-   var forgotPassword = A2($Html.p,
-   _U.list([]),
-   _U.list([A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/password_resets/new")]),_U.list([$Html.text("Forgot your password?")]))
-           ,$Html.text("|")
-           ,A2($Html.a,_U.list([$Html$Attributes.href("https://trooptrack.com/forgot_user_names/new")]),_U.list([$Html.text("Forgot your username?")]))]));
+   var termsOfService = function (address) {
+      var privacy = "https://trooptrack.com/privacy";
+      var termsOfService = "https://trooptrack.com/terms_of_service";
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([$Html.text("Use of this site constitutes acceptance of our")
+              ,A2($Html.br,_U.list([]),_U.list([]))
+              ,A2($Html.a,
+              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(termsOfService))]),
+              _U.list([$Html.text("Terms of Service")]))
+              ,$Html.text(" and ")
+              ,A2($Html.a,
+              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(privacy))]),
+              _U.list([$Html.text("Privacy Policy")]))
+              ,A2($Html.br,_U.list([]),_U.list([]))
+              ,A2($Html.br,_U.list([]),_U.list([]))
+              ,$Html.text("© 2008 - 2016 TroopTrack LLC.")]));
+   };
+   var forgotPassword = function (address) {
+      var passwordUrl = "https://trooptrack.com/password_resets/new";
+      var usernameUrl = "https://trooptrack.com/forgot_user_names/new";
+      return A2($Html.p,
+      _U.list([]),
+      _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(passwordUrl))]),
+              _U.list([$Html.text("Forgot your password?")]))
+              ,$Html.text("|")
+              ,A2($Html.a,
+              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(usernameUrl))]),
+              _U.list([$Html.text("Forgot your username?")]))]));
+   };
    var submitButton = F2(function (address,model) {
       var buttonText = function () {    var _p0 = model.authenticating;if (_p0 === true) {    return "Please wait...";} else {    return "Log in";}}();
       return A2($Html.p,
@@ -12008,8 +12048,8 @@ Elm.Login.View.make = function (_elm) {
                       ,A3($Html$Events.on,"input",$Html$Events.targetValue,A2(toMessage,address,$Login$Update.Password))
                       ,$Html$Attributes.value(model.password)]))
               ,A2(submitButton,address,model)
-              ,forgotPassword
-              ,termsOfService]));
+              ,forgotPassword(address)
+              ,termsOfService(address)]));
    });
    var view = F2(function (address,model) {    return $Layouts.centered(A2(viewContent,address,model));});
    return _elm.Login.View.values = {_op: _op
@@ -12164,7 +12204,7 @@ Elm.PhotoAlbums.View.make = function (_elm) {
    var menuItem = F5(function (address,action,icon,text,current) {
       var $class = current ? "menu-item current" : "menu-item";
       return A2($Html.li,
-      _U.list([$Html$Attributes.$class($class)]),
+      _U.list([$Html$Attributes.$class($class),nowrapText]),
       _U.list([A2($Html.a,
       _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,action),$Html$Attributes.$class("menu-link")]),
       _U.list([icon,A2($Html.span,_U.list([$Html$Attributes.$class("title")]),_U.list([$Html.text(text)]))]))]));
@@ -12194,7 +12234,7 @@ Elm.PhotoAlbums.View.make = function (_elm) {
             _U.list([A5(menuItem,
             address,
             $PhotoAlbums$Update.CurrentAlbum($Maybe.Nothing),
-            fontAwesome("caret-down"),
+            fontAwesome("angle-down"),
             _p6._0.troop,
             isCurrent(model.currentAlbum))]));
          }
@@ -12308,6 +12348,7 @@ Elm.App.make = function (_elm) {
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
+   $External = Elm.External.make(_elm),
    $Html = Elm.Html.make(_elm),
    $List = Elm.List.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
@@ -12405,6 +12446,14 @@ Elm.App.make = function (_elm) {
       v));
    });
    var setCurrentUserSignal = A2($Signal.map,$App$Update.CurrentUser,setCurrentUser);
+   var openExternal = Elm.Native.Port.make(_elm).outboundSignal("openExternal",
+   function (v) {
+      return v;
+   },
+   function () {
+      var external = $External.openExternal;
+      return external.signal;
+   }());
    var notifications = Elm.Native.Port.make(_elm).outboundSignal("notifications",
    function (v) {
       return {msgType: v.msgType,message: v.message};

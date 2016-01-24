@@ -14,6 +14,7 @@ import Login.Update exposing (storeUsersBox)
 import PhotoAlbums.Update exposing (photoDownloader, albumDownloader)
 import PhotoAlbums.Model
 import Notifications
+import External
 
 
 app : StartApp.App Model
@@ -81,6 +82,14 @@ port notifications =
     notifier = Notifications.notifications
   in
     notifier.signal
+
+
+port openExternal : Signal String
+port openExternal =
+  let
+    external = External.openExternal
+  in
+    external.signal
 
 
 {-

@@ -79,7 +79,7 @@ troopMenu address model =
           [ menuItem
               address
               (Update.CurrentAlbum Nothing)
-              (fontAwesome "caret-down")
+              (fontAwesome "angle-down")
               user.troop
               (isCurrent model.currentAlbum)
           ]
@@ -123,7 +123,9 @@ menuItem address action icon text current =
         else "menu-item"
   in
     H.li
-      [ A.class class ]
+      [ A.class class
+      , nowrapText
+      ]
       [ H.a
         [ A.href "#"
         , E.onClick address action

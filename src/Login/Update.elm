@@ -8,12 +8,14 @@ import Json.Decode exposing (Decoder, (:=), string, int, list, object8, at)
 import Login.Model as LM exposing (Model)
 import Credentials as C
 import Notifications
+import External
 
 type Action
   = Username String
   | Password String
   | Authenticate
   | UserToken (Result Error (List C.User))
+  | OpenExternal String
   | NoOp
 
 
@@ -44,6 +46,11 @@ update action model =
     Authenticate ->
       ( { model | authenticating = True }
       , authenticate model
+      )
+
+    OpenExternal url ->
+      ( model
+      , openExteral url
       )
 
     UserToken result ->
@@ -78,6 +85,14 @@ update action model =
 
 
 -- Effects
+
+
+openExteral : String -> Effects Action
+openExteral url =
+  External.open url
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
 
 authenticate : Model -> Effects Action
 authenticate model =
