@@ -113,6 +113,7 @@ sendAuthRequest model =
             , ("X-User-Password", model.password)
             ]
         , url = "https://trooptrack.com/api/v1/tokens"
+        --, url = "http://trooptrack.dev/api/v1/tokens"
         , body = Http.empty
         }
 
@@ -133,7 +134,7 @@ errorNotification message =
       |> Signal.send notifications.address
       |> Effects.task
       |> Effects.map (always NoOp)
-      
+
 
 -- Decoders
 

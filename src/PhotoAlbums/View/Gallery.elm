@@ -142,9 +142,9 @@ albumThumbnails address model =
 albumThumbnail : Address Update.Action -> PhotoAlbum -> Html
 albumThumbnail address album =
   let
-    photoUrl =
+    thumbUrl =
       List.head album.photos
-        |> Maybe.map .photoUrl
+        |> Maybe.map .thumbUrl
         |> Maybe.withDefault "http://placehold.it/550x550"
   in
     H.div
@@ -159,7 +159,7 @@ albumThumbnail address album =
 
         , H.img
           [ A.class "thumbnail"
-          , A.src photoUrl
+          , A.src thumbUrl
           ]
           []
         ]
@@ -217,7 +217,7 @@ photoThumbnail address model photo =
         [ H.text photoName ]
       , H.img
         [ A.class "thumbnail"
-        , A.src photo.photoUrl
+        , A.src photo.thumbUrl
         , A.title photoName
         ]
         []

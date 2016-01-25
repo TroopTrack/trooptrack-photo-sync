@@ -11458,11 +11458,11 @@ Elm.PhotoAlbums.Model.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var emptyPhoto = {photoUrl: "",photoId: 0,path: _U.list([])};
+   var emptyPhoto = {photoUrl: "",thumbUrl: "",photoId: 0,path: _U.list([])};
    var MenuOff = {ctor: "MenuOff"};
    var initialModel = {photoAlbums: _U.list([]),user: $Maybe.Nothing,currentAlbum: $Maybe.Nothing,photoDownloads: $Dict.empty,menuState: MenuOff};
    var MenuOn = {ctor: "MenuOn"};
-   var Photo = F3(function (a,b,c) {    return {photoUrl: a,photoId: b,path: c};});
+   var Photo = F4(function (a,b,c,d) {    return {photoUrl: a,thumbUrl: b,photoId: c,path: d};});
    var PhotoAlbum = F5(function (a,b,c,d,e) {    return {name: a,takenOn: b,photoCount: c,photoAlbumId: d,photos: e};});
    var Model = F5(function (a,b,c,d,e) {    return {photoAlbums: a,user: b,currentAlbum: c,photoDownloads: d,menuState: e};});
    return _elm.PhotoAlbums.Model.values = {_op: _op
@@ -11702,9 +11702,10 @@ Elm.PhotoAlbums.Update.make = function (_elm) {
       var parseUrl = function (url) {    return $Result.Ok(function (_) {    return _.path;}($Erl.parse(url)));};
       return A2($Json$Decode.customDecoder,A2($Json$Decode._op[":="],"photo",$Json$Decode.string),parseUrl);
    }();
-   var photoDecoder = A4($Json$Decode.object3,
+   var photoDecoder = A5($Json$Decode.object4,
    $PhotoAlbums$Model.Photo,
    A2($Json$Decode._op[":="],"photo",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"thumb",$Json$Decode.string),
    A2($Json$Decode._op[":="],"troop_photo_id",$Json$Decode.$int),
    photoPathDecoder);
    var photoAlbumDecoder = A6($Json$Decode.object5,
@@ -12330,7 +12331,7 @@ Elm.PhotoAlbums.View.Gallery.make = function (_elm) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("gallery-item")]),
       _U.list([A2($Html.h6,_U.list([$PhotoAlbums$View$Helpers.nowrapText]),_U.list([$Html.text(photoName)]))
-              ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photo.photoUrl),$Html$Attributes.title(photoName)]),_U.list([]))
+              ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photo.thumbUrl),$Html$Attributes.title(photoName)]),_U.list([]))
               ,A2($Html.div,_U.list([downloadButtonStyle]),_U.list([downloadButton]))]));
    });
    var photoThumbnails = F3(function (address,album,model) {
@@ -12338,13 +12339,13 @@ Elm.PhotoAlbums.View.Gallery.make = function (_elm) {
    });
    var albumName = function (album) {    return A2($Basics._op["++"],album.name,A2($Basics._op["++"]," (",A2($Basics._op["++"],album.takenOn,")")));};
    var albumThumbnail = F2(function (address,album) {
-      var photoUrl = A2($Maybe.withDefault,"http://placehold.it/550x550",A2($Maybe.map,function (_) {    return _.photoUrl;},$List.head(album.photos)));
+      var thumbUrl = A2($Maybe.withDefault,"http://placehold.it/550x550",A2($Maybe.map,function (_) {    return _.thumbUrl;},$List.head(album.photos)));
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("gallery-item")]),
       _U.list([A2($Html.a,
       _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$PhotoAlbums$Update.CurrentAlbum($Maybe.Just(album)))]),
       _U.list([A2($Html.h5,_U.list([$PhotoAlbums$View$Helpers.nowrapText]),_U.list([$Html.text(albumName(album))]))
-              ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(photoUrl)]),_U.list([]))]))]));
+              ,A2($Html.img,_U.list([$Html$Attributes.$class("thumbnail"),$Html$Attributes.src(thumbUrl)]),_U.list([]))]))]));
    });
    var albumThumbnails = F2(function (address,model) {
       return A2($Html.div,_U.list([$Html$Attributes.$class("gallery-items")]),A2($List.map,albumThumbnail(address),model.photoAlbums));

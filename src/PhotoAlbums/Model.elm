@@ -24,6 +24,7 @@ type alias PhotoAlbum =
 
 type alias Photo =
   { photoUrl : String
+  , thumbUrl : String
   , photoId : Int
   , path : List String
   }
@@ -47,6 +48,7 @@ initialModel =
 emptyPhoto : Photo
 emptyPhoto =
   { photoUrl = ""
+  , thumbUrl = ""
   , photoId = 0
   , path = []
   }

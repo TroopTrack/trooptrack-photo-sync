@@ -182,6 +182,7 @@ sendPhotoAlbumsRequest partnerToken user =
             , ("X-User-Token", user.token)
             ]
         , url = "https://trooptrack.com/api/v1/photo_albums"
+        --, url = "http://trooptrack.dev/api/v1/photo_albums"
         , body = Http.empty
         }
 
@@ -212,6 +213,7 @@ sendPhotoAlbumDetailsRequest partnerToken user album =
             , ("X-User-Token", user.token)
             ]
         , url = "https://trooptrack.com/api/v1/photo_albums/" ++ toString album.photoAlbumId
+        --, url = "http://trooptrack.dev/api/v1/photo_albums/" ++ toString album.photoAlbumId
         , body = Http.empty
         }
 
@@ -281,8 +283,9 @@ photoAlbumDecoder =
 
 photoDecoder : Json.Decoder Photo
 photoDecoder =
-  Json.object3 Photo
+  Json.object4 Photo
     ("photo" := Json.string)
+    ("thumb" := Json.string)
     ("troop_photo_id" := Json.int)
     (photoPathDecoder)
 
