@@ -38,10 +38,10 @@ type TroopType
 
 type alias TroopTypes = Dict.Dict Int TroopType
 
-initialCredentials : Credentials
-initialCredentials =
+initialCredentials : String -> Credentials
+initialCredentials partnerToken =
   --{ partnerToken = "l3CrVXqaUxS0Gb-cNcEBuA"
-  { partnerToken = "l3CrVXqaUxS0Gb-cNcEBuA"
+  { partnerToken = partnerToken
   , users = []
   }
 

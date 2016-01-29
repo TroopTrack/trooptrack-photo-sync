@@ -11361,7 +11361,7 @@ Elm.Credentials.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialCredentials = {partnerToken: "l3CrVXqaUxS0Gb-cNcEBuA",users: _U.list([])};
+   var initialCredentials = function (partnerToken) {    return {partnerToken: partnerToken,users: _U.list([])};};
    var UnknownTroopType = {ctor: "UnknownTroopType"};
    var SeaScouts = {ctor: "SeaScouts"};
    var Cap = {ctor: "Cap"};
@@ -11432,12 +11432,14 @@ Elm.Login.Model.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialModel = {username: ""
-                      ,password: ""
-                      ,authenticating: false
-                      ,credentials: $Credentials.initialCredentials
-                      ,errorMessage: $Maybe.Nothing
-                      ,successMessage: $Maybe.Nothing};
+   var initialModel = function (partnerToken) {
+      return {username: ""
+             ,password: ""
+             ,authenticating: false
+             ,credentials: $Credentials.initialCredentials(partnerToken)
+             ,errorMessage: $Maybe.Nothing
+             ,successMessage: $Maybe.Nothing};
+   };
    var Model = F6(function (a,b,c,d,e,f) {    return {username: a,password: b,authenticating: c,credentials: d,errorMessage: e,successMessage: f};});
    return _elm.Login.Model.values = {_op: _op,Model: Model,initialModel: initialModel};
 };
@@ -11511,10 +11513,12 @@ Elm.App.Model.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialModel = {page: $Pages.LoadingPage
-                      ,loginInfo: $Login$Model.initialModel
-                      ,photoAlbums: $PhotoAlbums$Model.initialModel
-                      ,troopTypes: $Credentials.initializeTroopTypes};
+   var initialModel = function (partnerToken) {
+      return {page: $Pages.LoadingPage
+             ,loginInfo: $Login$Model.initialModel(partnerToken)
+             ,photoAlbums: $PhotoAlbums$Model.initialModel
+             ,troopTypes: $Credentials.initializeTroopTypes};
+   };
    var Model = F4(function (a,b,c,d) {    return {page: a,loginInfo: b,photoAlbums: c,troopTypes: d};});
    return _elm.App.Model.values = {_op: _op,Model: Model,initialModel: initialModel};
 };
@@ -11881,7 +11885,7 @@ Elm.App.Update.make = function (_elm) {
    var CurrentUser = function (a) {    return {ctor: "CurrentUser",_0: a};};
    var NoOp = {ctor: "NoOp"};
    var getCurrentUser = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,getCurrentUserBox.address,{ctor: "_Tuple0"})));
-   var init = {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
+   var init = function (partnerToken) {    var impl = {ctor: "_Tuple2",_0: $App$Model.initialModel(partnerToken),_1: getCurrentUser};return impl;};
    var sendNotification = function (notification) {
       var notifier = $Notifications.notifications;
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,notifier.address,notification)));
@@ -11893,7 +11897,7 @@ Elm.App.Update.make = function (_elm) {
       switch (_p0.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
          case "Notify": return {ctor: "_Tuple2",_0: model,_1: sendNotification(_p0._0)};
-         case "ResetSession": return {ctor: "_Tuple2",_0: $App$Model.initialModel,_1: getCurrentUser};
+         case "ResetSession": return {ctor: "_Tuple2",_0: $App$Model.initialModel(model.loginInfo.credentials.partnerToken),_1: getCurrentUser};
          case "CurrentUser": var _p1 = _p0._0;
            if (_p1.ctor === "Nothing") {
                  return {ctor: "_Tuple2",_0: _U.update(model,{page: $Pages.LoginPage}),_1: $Effects.none};
@@ -12533,16 +12537,18 @@ Elm.App.make = function (_elm) {
    var cancelledDownload = Elm.Native.Port.make(_elm).inboundSignal("cancelledDownload",
    "PhotoAlbums.Model.Photo",
    function (v) {
-      return typeof v === "object" && "photoUrl" in v && "photoId" in v && "path" in v ? {_: {}
-                                                                                         ,photoUrl: typeof v.photoUrl === "string" || typeof v.photoUrl === "object" && v.photoUrl instanceof String ? v.photoUrl : _U.badPort("a string",
-                                                                                         v.photoUrl)
-                                                                                         ,photoId: typeof v.photoId === "number" && isFinite(v.photoId) && Math.floor(v.photoId) === v.photoId ? v.photoId : _U.badPort("an integer",
-                                                                                         v.photoId)
-                                                                                         ,path: typeof v.path === "object" && v.path instanceof Array ? Elm.Native.List.make(_elm).fromArray(v.path.map(function (v) {
-                                                                                            return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
-                                                                                            v);
-                                                                                         })) : _U.badPort("an array",
-                                                                                         v.path)} : _U.badPort("an object with fields `photoUrl`, `photoId`, `path`",
+      return typeof v === "object" && "photoUrl" in v && "thumbUrl" in v && "photoId" in v && "path" in v ? {_: {}
+                                                                                                            ,photoUrl: typeof v.photoUrl === "string" || typeof v.photoUrl === "object" && v.photoUrl instanceof String ? v.photoUrl : _U.badPort("a string",
+                                                                                                            v.photoUrl)
+                                                                                                            ,thumbUrl: typeof v.thumbUrl === "string" || typeof v.thumbUrl === "object" && v.thumbUrl instanceof String ? v.thumbUrl : _U.badPort("a string",
+                                                                                                            v.thumbUrl)
+                                                                                                            ,photoId: typeof v.photoId === "number" && isFinite(v.photoId) && Math.floor(v.photoId) === v.photoId ? v.photoId : _U.badPort("an integer",
+                                                                                                            v.photoId)
+                                                                                                            ,path: typeof v.path === "object" && v.path instanceof Array ? Elm.Native.List.make(_elm).fromArray(v.path.map(function (v) {
+                                                                                                               return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+                                                                                                               v);
+                                                                                                            })) : _U.badPort("an array",
+                                                                                                            v.path)} : _U.badPort("an object with fields `photoUrl`, `thumbUrl`, `photoId`, `path`",
       v);
    });
    var cancelDownload = function () {
@@ -12554,16 +12560,18 @@ Elm.App.make = function (_elm) {
    function (v) {
       return typeof v === "object" && v instanceof Array ? {ctor: "_Tuple2"
                                                            ,_0: typeof v[0] === "number" ? v[0] : _U.badPort("a number",v[0])
-                                                           ,_1: typeof v[1] === "object" && "photoUrl" in v[1] && "photoId" in v[1] && "path" in v[1] ? {_: {}
-                                                                                                                                                        ,photoUrl: typeof v[1].photoUrl === "string" || typeof v[1].photoUrl === "object" && v[1].photoUrl instanceof String ? v[1].photoUrl : _U.badPort("a string",
-                                                                                                                                                        v[1].photoUrl)
-                                                                                                                                                        ,photoId: typeof v[1].photoId === "number" && isFinite(v[1].photoId) && Math.floor(v[1].photoId) === v[1].photoId ? v[1].photoId : _U.badPort("an integer",
-                                                                                                                                                        v[1].photoId)
-                                                                                                                                                        ,path: typeof v[1].path === "object" && v[1].path instanceof Array ? Elm.Native.List.make(_elm).fromArray(v[1].path.map(function (v) {
-                                                                                                                                                           return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
-                                                                                                                                                           v);
-                                                                                                                                                        })) : _U.badPort("an array",
-                                                                                                                                                        v[1].path)} : _U.badPort("an object with fields `photoUrl`, `photoId`, `path`",
+                                                           ,_1: typeof v[1] === "object" && "photoUrl" in v[1] && "thumbUrl" in v[1] && "photoId" in v[1] && "path" in v[1] ? {_: {}
+                                                                                                                                                                              ,photoUrl: typeof v[1].photoUrl === "string" || typeof v[1].photoUrl === "object" && v[1].photoUrl instanceof String ? v[1].photoUrl : _U.badPort("a string",
+                                                                                                                                                                              v[1].photoUrl)
+                                                                                                                                                                              ,thumbUrl: typeof v[1].thumbUrl === "string" || typeof v[1].thumbUrl === "object" && v[1].thumbUrl instanceof String ? v[1].thumbUrl : _U.badPort("a string",
+                                                                                                                                                                              v[1].thumbUrl)
+                                                                                                                                                                              ,photoId: typeof v[1].photoId === "number" && isFinite(v[1].photoId) && Math.floor(v[1].photoId) === v[1].photoId ? v[1].photoId : _U.badPort("an integer",
+                                                                                                                                                                              v[1].photoId)
+                                                                                                                                                                              ,path: typeof v[1].path === "object" && v[1].path instanceof Array ? Elm.Native.List.make(_elm).fromArray(v[1].path.map(function (v) {
+                                                                                                                                                                                 return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",
+                                                                                                                                                                                 v);
+                                                                                                                                                                              })) : _U.badPort("an array",
+                                                                                                                                                                              v[1].path)} : _U.badPort("an object with fields `photoUrl`, `thumbUrl`, `photoId`, `path`",
                                                            v[1])} : _U.badPort("an array",v);
    });
    var updateDownloadProgress = function () {
@@ -12609,6 +12617,11 @@ Elm.App.make = function (_elm) {
       v));
    });
    var setCurrentUserSignal = A2($Signal.map,$App$Update.CurrentUser,setCurrentUser);
+   var partnerToken = Elm.Native.Port.make(_elm).inbound("partnerToken",
+   "String",
+   function (v) {
+      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",v);
+   });
    var openExternal = Elm.Native.Port.make(_elm).outboundSignal("openExternal",
    function (v) {
       return v;
@@ -12628,13 +12641,16 @@ Elm.App.make = function (_elm) {
    var startAlbumDownload = Elm.Native.Port.make(_elm).outboundSignal("startAlbumDownload",
    function (v) {
       return Elm.Native.List.make(_elm).toArray(v).map(function (v) {
-         return {photoUrl: v.photoUrl,photoId: v.photoId,path: Elm.Native.List.make(_elm).toArray(v.path).map(function (v) {    return v;})};
+         return {photoUrl: v.photoUrl
+                ,thumbUrl: v.thumbUrl
+                ,photoId: v.photoId
+                ,path: Elm.Native.List.make(_elm).toArray(v.path).map(function (v) {    return v;})};
       });
    },
    $PhotoAlbums$Update.albumDownloader.signal);
    var startPhotoDownload = Elm.Native.Port.make(_elm).outboundSignal("startPhotoDownload",
    function (v) {
-      return {photoUrl: v.photoUrl,photoId: v.photoId,path: Elm.Native.List.make(_elm).toArray(v.path).map(function (v) {    return v;})};
+      return {photoUrl: v.photoUrl,thumbUrl: v.thumbUrl,photoId: v.photoId,path: Elm.Native.List.make(_elm).toArray(v.path).map(function (v) {    return v;})};
    },
    $PhotoAlbums$Update.photoDownloader.signal);
    var getCurrentUserSignal = Elm.Native.Port.make(_elm).outboundSignal("getCurrentUserSignal",
@@ -12665,7 +12681,7 @@ Elm.App.make = function (_elm) {
              })};
    },
    $Login$Update.storeUsersBox.signal);
-   var app = $StartApp.start({init: $App$Update.init
+   var app = $StartApp.start({init: $App$Update.init(partnerToken)
                              ,update: $App$Update.update
                              ,view: $App$View.view
                              ,inputs: _U.list([setCurrentUserSignal

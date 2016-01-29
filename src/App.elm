@@ -20,7 +20,7 @@ import External
 app : StartApp.App Model
 app =
   StartApp.start
-    { init = init
+    { init = init partnerToken
     , update = update
     , view = view
     , inputs =
@@ -95,6 +95,9 @@ port openExternal =
 {-
 Ports -- Incoming
 -}
+
+
+port partnerToken : String
 
 
 port setCurrentUser : Signal (Maybe (C.Credentials))

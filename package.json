@@ -1,18 +1,21 @@
 {
   "name": "trooptrack-photo-sync",
   "productName": "TroopTrack Photo Sync",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Sync your TroopTrack Photo albums to your desktop.",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "watch-elm": "watch './node_modules/elm/binwrappers/elm-make src/*.elm --output=app/js/elm.js' ./src --wait=1 --ignoreDotFiles",
-    "install-elm": "./node_modules/elm/binwrappers/elm-package install"
+    "install-elm": "./node_modules/elm/binwrappers/elm-package install",
+    "package": "electron-packager . 'TroopTrack Photo Sync' --platform=all --arch=all --version=0.36.2 --app-version=0.0.1 --ignore='src/|elm-stuff/|releases/' --asar=true --prune=true --overwrite=true --out=releases/ --icon=share",
+    "win-installer": "electron-builder 'releases/TroopTrack Photo Sync-win32-x64' --platform=win --config=builder.json --out=dist"
   },
   "author": "TroopTrack, LLC",
   "license": "MIT",
   "devDependencies": {
+    "electron-packager": "^5.2.1",
     "electron-prebuilt": "^0.36.1",
     "elm": "^0.16.0",
     "watch": "^0.17.1"

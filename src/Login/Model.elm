@@ -12,12 +12,12 @@ type alias Model =
   }
 
 
-initialModel : Model
-initialModel =
+initialModel : String -> Model
+initialModel partnerToken =
   { username = ""
   , password = ""
   , authenticating = False
-  , credentials = C.initialCredentials
+  , credentials = C.initialCredentials partnerToken
   , errorMessage = Nothing
   , successMessage = Nothing
   }

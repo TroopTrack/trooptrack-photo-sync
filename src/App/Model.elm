@@ -14,10 +14,10 @@ type alias Model =
   }
 
 
-initialModel : Model
-initialModel =
+initialModel : String -> Model
+initialModel partnerToken =
   { page = Pages.LoadingPage
-  , loginInfo = Login.initialModel
+  , loginInfo = Login.initialModel partnerToken
   , photoAlbums = PhotoAlbums.initialModel
   , troopTypes = C.initializeTroopTypes
   }

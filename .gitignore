@@ -4,3 +4,5 @@ dbs/photo_sync_users/
 npm-debug.log
 .DS_Store
 config.json
+dist/
+releases/

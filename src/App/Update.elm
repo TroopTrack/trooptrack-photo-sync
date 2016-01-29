@@ -20,11 +20,15 @@ type Action
   | Notify Notifications.Notification
 
 
-init : (Model.Model, Effects Action)
-init =
-  ( Model.initialModel
-  , getCurrentUser
-  )
+init : String -> (Model.Model, Effects Action)
+init partnerToken =
+  let
+    impl =
+      ( Model.initialModel partnerToken
+      , getCurrentUser
+      )
+  in
+    impl
 
 
 update : Action -> Model.Model -> (Model.Model, Effects Action)
@@ -40,7 +44,7 @@ update action model =
       )
 
     ResetSession ->
-      ( Model.initialModel
+      ( Model.initialModel model.loginInfo.credentials.partnerToken
       , getCurrentUser
       )
 
