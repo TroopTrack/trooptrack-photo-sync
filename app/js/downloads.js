@@ -9,6 +9,13 @@ module.exports = function downloads(elmThing) {
   const fs = require('fs');
   const request = require('request');
   const progress = require('request-progress');
+  const async = require('async');
+
+
+  var downloadsQ = async.queue(function(task, callback) {
+    downloadPhoto(task.baseDirectory, task.photo);
+    callback();
+  }, 2);
 
 
   elmThing.ports.startPhotoDownload.subscribe(handlePhotoDownloads);
@@ -54,8 +61,16 @@ module.exports = function downloads(elmThing) {
 
   function downloadPhotos(baseDirectory, photos) {
     for (var photo of photos) {
-      downloadPhoto(baseDirectory, photo);
+      queueDownload(baseDirectory, photo);
     }
+  }
+
+
+  function queueDownload(baseDirectory, photo) {
+    downloadsQ.push({
+      baseDirectory: baseDirectory,
+      photo: photo
+    });
   }
 
 
@@ -104,7 +119,7 @@ module.exports = function downloads(elmThing) {
 
       // TODO: Send an error notification through elm
       console.error("We should send this into Elm:", err);
-      elmThing.ports.errorNotifications(err.message);
+      elmThing.ports.errorNotifications.send(err.message);
       return false;
 
     }).on('progress', function (state) {

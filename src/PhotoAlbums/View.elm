@@ -19,13 +19,13 @@ import PhotoAlbums.View.Gallery exposing (content)
 
 view : Address Update.Action -> C.TroopTypes -> C.Credentials -> Model -> Html
 view address troopTypes credentials model =
- H.div
-  []
-  [ topbar address model
-  , H.div
-    [ A.class "content" ]
-    [ content address troopTypes credentials model
+  H.div
+    []
+    [ topbar address model
+    , H.div
+      [ A.class "content" ]
+      [ content address troopTypes credentials model
+      ]
+    , menu address model
+    , mask model
     ]
-  , menu address model
-  , mask model
-  ]
