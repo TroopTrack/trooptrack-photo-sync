@@ -11494,6 +11494,65 @@ Elm.Pages.make = function (_elm) {
    var LoginPage = {ctor: "LoginPage"};
    return _elm.Pages.values = {_op: _op,LoginPage: LoginPage,PhotoAlbumsPage: PhotoAlbumsPage,LoadingPage: LoadingPage};
 };
+Elm.Releases = Elm.Releases || {};
+Elm.Releases.make = function (_elm) {
+   "use strict";
+   _elm.Releases = _elm.Releases || {};
+   if (_elm.Releases.values) return _elm.Releases.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Task = Elm.Task.make(_elm);
+   var _op = {};
+   var isUpate = function (orders) {
+      isUpate: while (true) {
+         var _p0 = orders;
+         if (_p0.ctor === "[]") {
+               return false;
+            } else {
+               switch (_p0._0.ctor)
+               {case "GT": return false;
+                  case "LT": return true;
+                  default: var _v1 = _p0._1;
+                    orders = _v1;
+                    continue isUpate;}
+            }
+      }
+   };
+   var semver = function (versionString) {
+      var intMe = function (s) {    return A2($Result.withDefault,0,$String.toInt(s));};
+      var justNumbers = _U.eq(A2($String.left,1,versionString),"v") ? A2($String.dropLeft,1,versionString) : versionString;
+      return A2($List.map,intMe,A2($String.split,".",justNumbers));
+   };
+   var isEarlierVersionOf = F2(function (v1,v2) {    return isUpate(A3($List.map2,$Basics.compare,v1,v2));});
+   var needsUpdate = F2(function (current,maybeSpeculative) {
+      var _p1 = maybeSpeculative;
+      if (_p1.ctor === "Nothing") {
+            return $Maybe.Nothing;
+         } else {
+            var _p2 = _p1._0;
+            return A2(isEarlierVersionOf,semver(current.version),semver(_p2.version)) ? $Maybe.Just(_p2) : $Maybe.Nothing;
+         }
+   });
+   var Release = F2(function (a,b) {    return {version: a,url: b};});
+   var release = function (version) {
+      var urlGuess = A2($Basics._op["++"],"https://github.com/TroopTrack/trooptrack-photo-sync/releases/tag/",version);
+      return A2(Release,version,urlGuess);
+   };
+   var decodeRelease = A3($Json$Decode.object2,
+   Release,
+   A2($Json$Decode._op[":="],"tag_name",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"html_url",$Json$Decode.string));
+   var latestVersion = A2($Http.get,decodeRelease,"https://api.github.com/repos/TroopTrack/trooptrack-photo-sync/releases/latest");
+   return _elm.Releases.values = {_op: _op,latestVersion: latestVersion,release: release,needsUpdate: needsUpdate,Release: Release};
+};
 Elm.App = Elm.App || {};
 Elm.App.Model = Elm.App.Model || {};
 Elm.App.Model.make = function (_elm) {
@@ -11510,16 +11569,18 @@ Elm.App.Model.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Pages = Elm.Pages.make(_elm),
    $PhotoAlbums$Model = Elm.PhotoAlbums.Model.make(_elm),
+   $Releases = Elm.Releases.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var initialModel = function (partnerToken) {
+   var initialModel = F2(function (partnerToken,version) {
       return {page: $Pages.LoadingPage
              ,loginInfo: $Login$Model.initialModel(partnerToken)
              ,photoAlbums: $PhotoAlbums$Model.initialModel
-             ,troopTypes: $Credentials.initializeTroopTypes};
-   };
-   var Model = F4(function (a,b,c,d) {    return {page: a,loginInfo: b,photoAlbums: c,troopTypes: d};});
+             ,troopTypes: $Credentials.initializeTroopTypes
+             ,version: $Releases.release(version)};
+   });
+   var Model = F5(function (a,b,c,d,e) {    return {page: a,loginInfo: b,photoAlbums: c,troopTypes: d,version: e};});
    return _elm.App.Model.values = {_op: _op,Model: Model,initialModel: initialModel};
 };
 Elm.Notifications = Elm.Notifications || {};
@@ -11539,25 +11600,8 @@ Elm.Notifications.make = function (_elm) {
    var empty = A2(Notification,"","");
    var notifications = $Signal.mailbox(empty);
    var error = Notification("error");
-   return _elm.Notifications.values = {_op: _op,Notification: Notification,empty: empty,error: error,notifications: notifications};
-};
-Elm.External = Elm.External || {};
-Elm.External.make = function (_elm) {
-   "use strict";
-   _elm.External = _elm.External || {};
-   if (_elm.External.values) return _elm.External.values;
-   var _U = Elm.Native.Utils.make(_elm),
-   $Basics = Elm.Basics.make(_elm),
-   $Debug = Elm.Debug.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $Task = Elm.Task.make(_elm);
-   var _op = {};
-   var openExternal = $Signal.mailbox("");
-   var open = function (url) {    return A2($Signal.send,openExternal.address,url);};
-   return _elm.External.values = {_op: _op,open: open,openExternal: openExternal};
+   var info = Notification("info");
+   return _elm.Notifications.values = {_op: _op,Notification: Notification,empty: empty,error: error,info: info,notifications: notifications};
 };
 Elm.Login = Elm.Login || {};
 Elm.Login.Update = Elm.Login.Update || {};
@@ -11571,7 +11615,6 @@ Elm.Login.Update.make = function (_elm) {
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
-   $External = Elm.External.make(_elm),
    $Http = Elm.Http.make(_elm),
    $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
@@ -11582,7 +11625,7 @@ Elm.Login.Update.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
-   var storeUsersBox = $Signal.mailbox($Credentials.initialCredentials);
+   var storeUsersBox = $Signal.mailbox($Credentials.initialCredentials(""));
    var userDecoder = A9($Json$Decode.object8,
    $Credentials.User,
    A2($Json$Decode._op[":="],"token",$Json$Decode.string),
@@ -11607,9 +11650,8 @@ Elm.Login.Update.make = function (_elm) {
       ,url: "https://trooptrack.com/api/v1/tokens"
       ,body: $Http.empty}));
    };
-   var init = {ctor: "_Tuple2",_0: $Login$Model.initialModel,_1: $Effects.none};
+   var init = function (partnerToken) {    return {ctor: "_Tuple2",_0: $Login$Model.initialModel(partnerToken),_1: $Effects.none};};
    var NoOp = {ctor: "NoOp"};
-   var openExteral = function (url) {    return A2($Effects.map,$Basics.always(NoOp),$Effects.task($External.open(url)));};
    var storeCurrentUser = function (credentials) {
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,storeUsersBox.address,credentials)));
    };
@@ -11617,7 +11659,6 @@ Elm.Login.Update.make = function (_elm) {
       var notifications = $Notifications.notifications;
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,notifications.address,$Notifications.error(message))));
    };
-   var OpenExternal = function (a) {    return {ctor: "OpenExternal",_0: a};};
    var UserToken = function (a) {    return {ctor: "UserToken",_0: a};};
    var authenticate = function (model) {    return $Effects.task(A2($Task.map,UserToken,$Task.toResult(sendAuthRequest(model))));};
    var update = F2(function (action,model) {
@@ -11627,7 +11668,6 @@ Elm.Login.Update.make = function (_elm) {
          case "Username": return {ctor: "_Tuple2",_0: _U.update(model,{username: _p0._0}),_1: $Effects.none};
          case "Password": return {ctor: "_Tuple2",_0: _U.update(model,{password: _p0._0}),_1: $Effects.none};
          case "Authenticate": return {ctor: "_Tuple2",_0: _U.update(model,{authenticating: true}),_1: authenticate(model)};
-         case "OpenExternal": return {ctor: "_Tuple2",_0: model,_1: openExteral(_p0._0)};
          default: var _p1 = _p0._0;
            if (_p1.ctor === "Ok") {
                  var oldCredentials = model.credentials;
@@ -11651,11 +11691,9 @@ Elm.Login.Update.make = function (_elm) {
                                      ,Password: Password
                                      ,Authenticate: Authenticate
                                      ,UserToken: UserToken
-                                     ,OpenExternal: OpenExternal
                                      ,NoOp: NoOp
                                      ,init: init
                                      ,update: update
-                                     ,openExteral: openExteral
                                      ,authenticate: authenticate
                                      ,sendAuthRequest: sendAuthRequest
                                      ,storeCurrentUser: storeCurrentUser
@@ -11876,16 +11914,23 @@ Elm.App.Update.make = function (_elm) {
    $Notifications = Elm.Notifications.make(_elm),
    $Pages = Elm.Pages.make(_elm),
    $PhotoAlbums$Update = Elm.PhotoAlbums.Update.make(_elm),
+   $Releases = Elm.Releases.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm);
    var _op = {};
    var getCurrentUserBox = $Signal.mailbox({ctor: "_Tuple0"});
+   var LatestRelease = function (a) {    return {ctor: "LatestRelease",_0: a};};
+   var findLatestRelease = A2($Effects.map,LatestRelease,$Effects.task($Task.toMaybe($Releases.latestVersion)));
    var Notify = function (a) {    return {ctor: "Notify",_0: a};};
    var ResetSession = {ctor: "ResetSession"};
    var CurrentUser = function (a) {    return {ctor: "CurrentUser",_0: a};};
    var NoOp = {ctor: "NoOp"};
    var getCurrentUser = A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,getCurrentUserBox.address,{ctor: "_Tuple0"})));
-   var init = function (partnerToken) {    var impl = {ctor: "_Tuple2",_0: $App$Model.initialModel(partnerToken),_1: getCurrentUser};return impl;};
+   var init = F2(function (partnerToken,version) {
+      var impl = {ctor: "_Tuple2",_0: A2($App$Model.initialModel,partnerToken,version),_1: $Effects.batch(_U.list([getCurrentUser,findLatestRelease]))};
+      return impl;
+   });
    var sendNotification = function (notification) {
       var notifier = $Notifications.notifications;
       return A2($Effects.map,$Basics.always(NoOp),$Effects.task(A2($Signal.send,notifier.address,notification)));
@@ -11896,26 +11941,43 @@ Elm.App.Update.make = function (_elm) {
       var _p0 = action;
       switch (_p0.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         case "Notify": return {ctor: "_Tuple2",_0: model,_1: sendNotification(_p0._0)};
-         case "ResetSession": return {ctor: "_Tuple2",_0: $App$Model.initialModel(model.loginInfo.credentials.partnerToken),_1: getCurrentUser};
-         case "CurrentUser": var _p1 = _p0._0;
+         case "LatestRelease": var updateLink = function (release) {
+              return A2($Basics._op["++"],
+              "<a href=\'",
+              A2($Basics._op["++"],release.url,A2($Basics._op["++"],"\' taget=\'_blank\'>",A2($Basics._op["++"],release.version,"</a>"))));
+           };
+           var baseMessage = "\n          A new version of TroopTrack Photo Sync is available.\n          You can download it here:\n          ";
+           var updateMessage = function (release) {    return A2($Basics._op["++"],baseMessage,updateLink(release));};
+           var updateFx = function (release) {    return sendNotification($Notifications.info(updateMessage(release)));};
+           var updateTarget = A2($Releases.needsUpdate,model.version,_p0._0);
+           var _p1 = updateTarget;
            if (_p1.ctor === "Nothing") {
+                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+              } else {
+                 return {ctor: "_Tuple2",_0: model,_1: updateFx(_p1._0)};
+              }
+         case "Notify": return {ctor: "_Tuple2",_0: model,_1: sendNotification(_p0._0)};
+         case "ResetSession": var version = model.version.version;
+           var token = model.loginInfo.credentials.partnerToken;
+           return {ctor: "_Tuple2",_0: A2($App$Model.initialModel,token,version),_1: getCurrentUser};
+         case "CurrentUser": var _p2 = _p0._0;
+           if (_p2.ctor === "Nothing") {
                  return {ctor: "_Tuple2",_0: _U.update(model,{page: $Pages.LoginPage}),_1: $Effects.none};
               } else {
                  var loginInfo = model.loginInfo;
-                 var newLoginInfo = _U.update(loginInfo,{credentials: _p1._0});
+                 var newLoginInfo = _U.update(loginInfo,{credentials: _p2._0});
                  return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: newLoginInfo,page: $Pages.PhotoAlbumsPage}),_1: $Effects.none};
               }
-         case "Authentication": var _p2 = A2($Login$Update.update,_p0._0,model.loginInfo);
-           var login = _p2._0;
-           var fx = _p2._1;
+         case "Authentication": var _p3 = A2($Login$Update.update,_p0._0,model.loginInfo);
+           var login = _p3._0;
+           var fx = _p3._1;
            var users = login.credentials.users;
            var page = $List.isEmpty(users) ? model.page : $Pages.PhotoAlbumsPage;
            return {ctor: "_Tuple2",_0: _U.update(model,{loginInfo: login,page: page}),_1: A2($Effects.map,Authentication,fx)};
          default: var credentials = model.loginInfo.credentials;
-           var _p3 = A3($PhotoAlbums$Update.update,_p0._0,credentials.partnerToken,model.photoAlbums);
-           var newPhotoAlbums = _p3._0;
-           var fx = _p3._1;
+           var _p4 = A3($PhotoAlbums$Update.update,_p0._0,credentials.partnerToken,model.photoAlbums);
+           var newPhotoAlbums = _p4._0;
+           var fx = _p4._1;
            return {ctor: "_Tuple2",_0: _U.update(model,{photoAlbums: newPhotoAlbums}),_1: A2($Effects.map,PhotoAlbums,fx)};}
    });
    return _elm.App.Update.values = {_op: _op
@@ -11925,10 +11987,12 @@ Elm.App.Update.make = function (_elm) {
                                    ,CurrentUser: CurrentUser
                                    ,ResetSession: ResetSession
                                    ,Notify: Notify
+                                   ,LatestRelease: LatestRelease
                                    ,init: init
                                    ,update: update
                                    ,getCurrentUser: getCurrentUser
                                    ,sendNotification: sendNotification
+                                   ,findLatestRelease: findLatestRelease
                                    ,getCurrentUserBox: getCurrentUserBox};
 };
 Elm.Layouts = Elm.Layouts || {};
@@ -11986,13 +12050,9 @@ Elm.Login.View.make = function (_elm) {
       _U.list([]),
       _U.list([$Html.text("Use of this site constitutes acceptance of our")
               ,A2($Html.br,_U.list([]),_U.list([]))
-              ,A2($Html.a,
-              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(termsOfService))]),
-              _U.list([$Html.text("Terms of Service")]))
+              ,A2($Html.a,_U.list([$Html$Attributes.href(termsOfService)]),_U.list([$Html.text("Terms of Service")]))
               ,$Html.text(" and ")
-              ,A2($Html.a,
-              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(privacy))]),
-              _U.list([$Html.text("Privacy Policy")]))
+              ,A2($Html.a,_U.list([$Html$Attributes.href(privacy)]),_U.list([$Html.text("Privacy Policy")]))
               ,A2($Html.br,_U.list([]),_U.list([]))
               ,A2($Html.br,_U.list([]),_U.list([]))
               ,$Html.text("© 2008 - 2016 TroopTrack LLC.")]));
@@ -12002,13 +12062,9 @@ Elm.Login.View.make = function (_elm) {
       var usernameUrl = "https://trooptrack.com/forgot_user_names/new";
       return A2($Html.p,
       _U.list([]),
-      _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(passwordUrl))]),
-              _U.list([$Html.text("Forgot your password?")]))
+      _U.list([A2($Html.a,_U.list([$Html$Attributes.href(passwordUrl)]),_U.list([$Html.text("Forgot your password?")]))
               ,$Html.text("|")
-              ,A2($Html.a,
-              _U.list([$Html$Attributes.href("#"),A2($Html$Events.onClick,address,$Login$Update.OpenExternal(usernameUrl))]),
-              _U.list([$Html.text("Forgot your username?")]))]));
+              ,A2($Html.a,_U.list([$Html$Attributes.href(usernameUrl)]),_U.list([$Html.text("Forgot your username?")]))]));
    };
    var submitButton = F2(function (address,model) {
       var buttonText = function () {    var _p0 = model.authenticating;if (_p0 === true) {    return "Please wait...";} else {    return "Log in";}}();
@@ -12515,7 +12571,6 @@ Elm.App.make = function (_elm) {
    $Credentials = Elm.Credentials.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
-   $External = Elm.External.make(_elm),
    $Html = Elm.Html.make(_elm),
    $List = Elm.List.make(_elm),
    $Login$Update = Elm.Login.Update.make(_elm),
@@ -12617,19 +12672,16 @@ Elm.App.make = function (_elm) {
       v));
    });
    var setCurrentUserSignal = A2($Signal.map,$App$Update.CurrentUser,setCurrentUser);
+   var version = Elm.Native.Port.make(_elm).inbound("version",
+   "String",
+   function (v) {
+      return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",v);
+   });
    var partnerToken = Elm.Native.Port.make(_elm).inbound("partnerToken",
    "String",
    function (v) {
       return typeof v === "string" || typeof v === "object" && v instanceof String ? v : _U.badPort("a string",v);
    });
-   var openExternal = Elm.Native.Port.make(_elm).outboundSignal("openExternal",
-   function (v) {
-      return v;
-   },
-   function () {
-      var external = $External.openExternal;
-      return external.signal;
-   }());
    var notifications = Elm.Native.Port.make(_elm).outboundSignal("notifications",
    function (v) {
       return {msgType: v.msgType,message: v.message};
@@ -12681,7 +12733,7 @@ Elm.App.make = function (_elm) {
              })};
    },
    $Login$Update.storeUsersBox.signal);
-   var app = $StartApp.start({init: $App$Update.init(partnerToken)
+   var app = $StartApp.start({init: A2($App$Update.init,partnerToken,version)
                              ,update: $App$Update.update
                              ,view: $App$View.view
                              ,inputs: _U.list([setCurrentUserSignal

@@ -25,6 +25,7 @@
   <script src="js/storage.js"></script>
   <script type="application/javascript">
     var config = require('./js/config.js');
+    var currentVersion = require('./js/version.js');
 
     config(function(options) {
 
@@ -41,7 +42,8 @@
         cancelledDownload: nullPhoto,
         sessionEnded: [],
         errorNotifications: "",
-        partnerToken: options.partnerToken
+        partnerToken: options.partnerToken,
+        version: currentVersion()
       });
 
       var storage = require('./js/storage.js');
@@ -53,8 +55,10 @@
       var notifications = require('./js/notifications.js');
       notifications(elmThing);
 
-      var external = require('./js/external.js');
-      external(elmThing);
+      $(document).on('click', 'a[href^="http"]', function(event) {
+        event.preventDefault();
+        require('electron').remote.shell.openExternal(this.href);
+      });
 
     });
   </script>

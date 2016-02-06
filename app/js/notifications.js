@@ -14,6 +14,9 @@ module.exports = function notifications(elmThing) {
       if (msg.msgType === "error") {
         toastr.error(msg.message);
       }
+      else if (msg.msgType === "info") {
+        toastr.info(msg.message);
+      }
       else {
         console.log("WAT!?", msg);
       }

@@ -8,20 +8,18 @@ import Json.Decode exposing (Decoder, (:=), string, int, list, object8, at)
 import Login.Model as LM exposing (Model)
 import Credentials as C
 import Notifications
-import External
 
 type Action
   = Username String
   | Password String
   | Authenticate
   | UserToken (Result Error (List C.User))
-  | OpenExternal String
   | NoOp
 
 
-init : (Model, Effects action)
-init =
-  ( LM.initialModel
+init : String -> (Model, Effects action)
+init partnerToken =
+  ( LM.initialModel partnerToken
   , Effects.none
   )
 
@@ -46,11 +44,6 @@ update action model =
     Authenticate ->
       ( { model | authenticating = True }
       , authenticate model
-      )
-
-    OpenExternal url ->
-      ( model
-      , openExteral url
       )
 
     UserToken result ->
@@ -85,13 +78,6 @@ update action model =
 
 
 -- Effects
-
-
-openExteral : String -> Effects Action
-openExteral url =
-  External.open url
-    |> Effects.task
-    |> Effects.map (always NoOp)
 
 
 authenticate : Model -> Effects Action
@@ -164,4 +150,4 @@ userDecoder =
 
 storeUsersBox : Signal.Mailbox C.Credentials
 storeUsersBox =
-  Signal.mailbox C.initialCredentials
+  Signal.mailbox <| C.initialCredentials ""

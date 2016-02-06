@@ -14,6 +14,10 @@ error =
   Notification "error"
 
 
+info : String -> Notification
+info =
+  Notification "info"
+
 -- Signals and Mailboxes
 
 notifications : Signal.Mailbox Notification

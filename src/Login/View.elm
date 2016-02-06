@@ -95,14 +95,12 @@ forgotPassword address =
   in
     H.p []
       [ H.a
-        [ A.href "#"
-        , E.onClick address <| OpenExternal passwordUrl
+        [ A.href passwordUrl
         ]
         [ H.text "Forgot your password?" ]
       , H.text "|"
       , H.a
-        [ A.href "#"
-        , E.onClick address <| OpenExternal usernameUrl
+        [ A.href usernameUrl
         ]
         [ H.text "Forgot your username?" ]
       ]
@@ -117,14 +115,12 @@ termsOfService address =
       [ H.text "Use of this site constitutes acceptance of our"
       , H.br [] []
       , H.a
-        [ A.href "#"
-        , E.onClick address <| OpenExternal termsOfService
+        [ A.href termsOfService
         ]
         [ H.text "Terms of Service" ]
       , H.text " and "
       , H.a
-        [ A.href "#"
-        , E.onClick address <| OpenExternal privacy
+        [ A.href privacy
         ]
         [ H.text "Privacy Policy" ]
       , H.br [] []
