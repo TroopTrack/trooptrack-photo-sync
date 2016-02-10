@@ -25,7 +25,7 @@
 
   <div id="fullpage">
 
-    <div id="download" class="section">
+    <div id="download" class="section" data-anchor="dl">
 
       <div class="container">
         <h1>Trooptrack Photo Sync</h1>
@@ -34,30 +34,36 @@
         </h2>
 
         <div class="image">
-          <img src="PhotoAlbum.png" title="Photo Album Screen"/>
+          <a
+            href="https://github.com/TroopTrack/trooptrack-photo-sync/releases/"
+            title="Releases">
+            <img src="PhotoAlbum.png" title="Photo Album Screen"/>
+          </a>
+
         </div>
+
       </div>
 
     </div>
 
 
-    <div id="features" class="section">
+    <div id="features" class="section" data-anchor="fzer">
 
-      <div id="single-download" class="slide">
-        <h1>Download a file</h1>
+      <div id="single-download" class="slide" data-anchor="fzer1">
+        <h1>Download a photo</h1>
         <div class="image">
           <img src="SaveAFile.png" title="Download a photo"/>
         </div>
       </div>
 
-      <div id="download-all" class="slide">
-        <h1>Download ALL the files</h1>
+      <div id="download-all" class="slide" data-anchor="fzer2">
+        <h1>Download ALL the photos!</h1>
         <div class="image">
           <img src="DownloadAll.png" title="Download all the photos"/>
         </div>
       </div>
 
-      <div id="troop-switch" class="slide">
+      <div id="troop-switch" class="slide" data-anchor="fzer3">
         <h1>Easily switch between troops</h1>
         <div class="image">
           <img src="Switch.png" title="Switch between troops"/>
@@ -66,6 +72,22 @@
 
     </div>
 
+  </div>
+
+  <div id="menu">
+    <a
+      href="https://github.com/TroopTrack/trooptrack-photo-sync/releases/"
+      class="btn success"
+      title="Releases">
+      Download
+    </a>
+
+    <a
+      href="https://github.com/TroopTrack/trooptrack-photo-sync/"
+      class="btn primary"
+      title="Source Code">
+      Source Code
+    </a>
   </div>
 
   <script src="jquery-1.12.0.min.js"></script>
