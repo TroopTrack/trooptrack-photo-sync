@@ -1,0 +1,38 @@
+body {
+  font-family: 'Open Sans', sans-serif;
+}
+
+img {
+  height: auto;
+  width: 100%;
+  box-shadow: 5px 2px 1px rgba(0, 0, 0, 0.25);
+}
+
+.container {
+  margin: auto;
+}
+
+.image {
+  max-width: 650px;
+  margin: auto;
+}
+
+
+#download {
+  background: #88bbdd;
+  color: #666633;
+  text-align: center;
+  text-shadow: 2px 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+#features {
+  background: #aa9933;
+  color: #584B00;
+  text-align: center;
+  text-shadow: 2px 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+#single-download .image {
+  max-width: 250px;
+  height: auto;
+}
