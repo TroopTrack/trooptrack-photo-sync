@@ -92,7 +92,9 @@ module.exports = function menus(app) {
       {
         label: 'Learn More',
         click: function() {
-          require('electron').shell.openExternal('https://trooptrack.com');
+          require('electron').shell.openExternal(
+            'http://trooptrack.github.io/trooptrack-photo-sync/'
+          );
         }
       },
     ]
