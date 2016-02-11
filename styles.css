@@ -44,6 +44,14 @@ img {
   color: white;
 }
 
+.info {
+  background: #01B4D5;
+  color: white;
+}
+.btn.info:hover {
+  background: #005464;
+}
+
 #menu {
   position: absolute;
   left: 0;
