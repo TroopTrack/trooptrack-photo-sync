@@ -15,7 +15,7 @@
     "install-elm": "./node_modules/elm/binwrappers/elm-package install",
     "package": "electron-packager . 'TroopTrack Photo Sync' --platform=win32,darwin --arch=x64 --version=0.36.7 --app-version=1.0.0 --ignore='elm-stuff/|frog/|toad/' --asar=true --prune=true --overwrite=true --out=frog/ --icon=CameraLogo",
     "win-installer": "electron-builder 'frog/TroopTrack Photo Sync-win32-x64' --platform=win --config=builder.json --out=toad",
-    "osx-installer": "electron-builder 'frog/TroopTrack Photo Sync-darwin-x64/TroopTrack Photo Sync.app' --platform=osx --config=builder.json --out=toad"
+    "osx-installer": "electron-builder 'frog/TroopTrack Photo Sync-darwin-x64/TroopTrack Photo Sync.app' --platform=osx --config=builder.json --out=toad --sign=`cat .osx-cert`"
   },
   "author": "TroopTrack, LLC",
   "license": "MIT",
