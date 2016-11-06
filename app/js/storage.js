@@ -2,9 +2,9 @@ module.exports.connectTo = function connectTo(elmThing) {
 
   console.log("Connected to Elm!", elmThing);
 
-  elmThing.ports.storeUsersSignal.subscribe(storeCurrentUser);
-  elmThing.ports.getCurrentUserSignal.subscribe(getCurrentUser(elmThing));
-  elmThing.ports.endSession.subscribe(destroyCurrentUser(elmThing));
+  elmThing.ports.storeCurrentUser.subscribe(storeCurrentUser);
+  elmThing.ports.getCurrentUser.subscribe(getCurrentUser(elmThing));
+  elmThing.ports.logout.subscribe(destroyCurrentUser(elmThing));
 
   function storeCurrentUser(credentials) {
     localStorage.setItem("current_user", JSON.stringify(credentials));
@@ -20,7 +20,7 @@ module.exports.connectTo = function connectTo(elmThing) {
   function destroyCurrentUser(elmThing) {
     return function destroyCurrentUserImpl() {
       localStorage.removeItem("current_user");
-      elmThing.ports.sessionEnded.send([]);
+      elmThing.ports.sessionEnded.send(null);
     };
   }
 

@@ -1,6 +1,8 @@
-module Loading.View where
+module Loading.View exposing (..)
 
 import Html as H exposing (Html)
 
-view : Html
-view = H.text "Loading..."
+
+view : Html a
+view =
+    H.text "Loading..."

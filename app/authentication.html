@@ -36,12 +36,9 @@
         path : []
       };
 
-      var elmThing = Elm.fullscreen(Elm.App, {
-        setCurrentUser: null,
-        downloadProgress: [0.0, nullPhoto],
-        cancelledDownload: nullPhoto,
-        sessionEnded: [],
-        errorNotifications: "",
+      var Elm = require('./js/elm.js');
+
+      var elmThing = Elm.App.fullscreen({
         partnerToken: options.partnerToken,
         version: currentVersion()
       });

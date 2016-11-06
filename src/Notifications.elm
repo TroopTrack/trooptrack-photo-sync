@@ -1,25 +1,22 @@
-module Notifications where
+module Notifications exposing (..)
+
 
 type alias Notification =
-  { msgType : String
-  , message : String
-  }
+    { msgType : String
+    , message : String
+    }
+
 
 empty : Notification
 empty =
-  Notification "" ""
+    Notification "" ""
+
 
 error : String -> Notification
 error =
-  Notification "error"
+    Notification "error"
 
 
 info : String -> Notification
 info =
-  Notification "info"
-
--- Signals and Mailboxes
-
-notifications : Signal.Mailbox Notification
-notifications =
-  Signal.mailbox empty
+    Notification "info"

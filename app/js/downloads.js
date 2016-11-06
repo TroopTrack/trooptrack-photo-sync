@@ -1,4 +1,6 @@
 /* jslint esnext: true, node: true */
+"use strict"
+
 module.exports = function downloads(elmThing) {
 
   const BrowserWindow = require('electron').remote.BrowserWindow;
@@ -18,8 +20,8 @@ module.exports = function downloads(elmThing) {
   }, 2);
 
 
-  elmThing.ports.startPhotoDownload.subscribe(handlePhotoDownloads);
-  elmThing.ports.startAlbumDownload.subscribe(handleAlbumDownloads);
+  elmThing.ports.downloadPhoto.subscribe(handlePhotoDownloads);
+  elmThing.ports.downloadAlbum.subscribe(handleAlbumDownloads);
 
 
   function handlePhotoDownloads(photo) {
@@ -53,14 +55,14 @@ module.exports = function downloads(elmThing) {
 
 
   function cancelDownloads(photos) {
-    for (var photo of photos) {
+    for (let photo of photos.photos) {
       elmThing.ports.cancelledDownload.send(photo);
     }
   }
 
 
   function downloadPhotos(baseDirectory, photos) {
-    for (var photo of photos) {
+    for (let photo of photos.photos) {
       queueDownload(baseDirectory, photo);
     }
   }

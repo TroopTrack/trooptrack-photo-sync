@@ -1,32 +1,27 @@
-module App.View where
+module App.View exposing (..)
 
-import Signal exposing (Address)
 import Html as H exposing (Html)
-
+import Html.App
 import App.Model exposing (Model)
-import App.Update exposing (Action(..))
-
+import App.Update as Update
 import Login.View as Login
 import PhotoAlbums.View as PhotoAlbums
 import Loading.View as Loading
 import Pages
 
 
-view : Address Action -> Model -> Html
-view address model =
-  case model.page of
+view : Model -> Html Update.Action
+view model =
+    case model.page of
+        Pages.LoadingPage ->
+            Loading.view
 
-    Pages.LoadingPage ->
-      Loading.view
+        Pages.LoginPage ->
+            Login.view model.loginInfo
+                |> Html.App.map Update.Authentication
 
-    Pages.LoginPage ->
-      Login.view
-        (Signal.forwardTo address Authentication)
-        model.loginInfo
-
-    Pages.PhotoAlbumsPage ->
-      PhotoAlbums.view
-        (Signal.forwardTo address App.Update.PhotoAlbums)
-        model.troopTypes
-        model.loginInfo.credentials
-        model.photoAlbums
+        Pages.PhotoAlbumsPage ->
+            PhotoAlbums.view model.troopTypes
+                model.loginInfo.credentials
+                model.photoAlbums
+                |> Html.App.map Update.PhotoAlbums
